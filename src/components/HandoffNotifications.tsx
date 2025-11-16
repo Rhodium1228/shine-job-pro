@@ -113,6 +113,18 @@ export const HandoffNotifications = () => {
       return;
     }
 
+    // Update receiver's status to busy
+    await supabase
+      .from('profiles')
+      .update({ availability_status: 'busy' })
+      .eq('id', notification.to_staff_id);
+
+    // Update sender's status to available
+    await supabase
+      .from('profiles')
+      .update({ availability_status: 'available' })
+      .eq('id', notification.from_staff_id);
+
     toast.success('Job transferred successfully!');
   };
 

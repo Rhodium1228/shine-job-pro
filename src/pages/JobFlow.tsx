@@ -120,6 +120,20 @@ const JobFlow = () => {
     return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const updateAvailabilityStatus = async (status: 'available' | 'busy' | 'on_break' | 'offline') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ availability_status: status })
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Error updating availability status:', error);
+    }
+  };
+
   const handleStart = async () => {
     playStartSound();
     setLoading(true);
@@ -135,6 +149,7 @@ const JobFlow = () => {
     if (job) {
       setActiveJobData(job);
       setJobStatus("active");
+      await updateAvailabilityStatus('busy');
       toast.success("Job started! 🚀");
     } else {
       toast.error("Failed to start job");
@@ -194,6 +209,7 @@ const JobFlow = () => {
     if (success) {
       playCompleteSound();
       setJobStatus("completed");
+      await updateAvailabilityStatus('available');
       toast.success("Job completed! Great work! 🎉");
       setTimeout(() => {
         navigate("/dashboard");
@@ -204,8 +220,9 @@ const JobFlow = () => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (confirm("Are you sure you want to cancel this job?")) {
+      await updateAvailabilityStatus('available');
       navigate("/dashboard");
     }
   };
