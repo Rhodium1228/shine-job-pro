@@ -19,6 +19,39 @@ const SlideToStart = ({ onComplete, disabled = false }: SlideToStartProps) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      handleMove(e.clientX);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      handleMove(e.touches[0].clientX);
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+      
+      // Snap back if not completed
+      if (position < maxPosition.current * 0.9) {
+        setPosition(0);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging, position]);
+
   const handleStart = (clientX: number) => {
     if (disabled) return;
     setIsDragging(true);
@@ -40,27 +73,18 @@ const SlideToStart = ({ onComplete, disabled = false }: SlideToStartProps) => {
       setPosition(maxPosition.current);
       setTimeout(() => {
         onComplete();
+        setPosition(0); // Reset for next time
       }, 200);
     }
   };
 
-  const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    
-    // Snap back if not completed
-    if (position < maxPosition.current * 0.9) {
-      setPosition(0);
-    }
-  };
-
-  const progressPercentage = (position / maxPosition.current) * 100;
+  const progressPercentage = maxPosition.current > 0 ? (position / maxPosition.current) * 100 : 0;
 
   return (
     <div
       ref={containerRef}
       className={cn(
-        "relative h-16 rounded-full bg-muted overflow-hidden",
+        "relative h-16 rounded-full bg-muted overflow-hidden select-none",
         disabled && "opacity-50 cursor-not-allowed"
       )}
     >
@@ -85,18 +109,19 @@ const SlideToStart = ({ onComplete, disabled = false }: SlideToStartProps) => {
       {/* Slider Button */}
       <button
         className={cn(
-          "absolute top-2 left-2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center transition-transform z-10",
+          "absolute top-2 left-2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center transition-transform z-10 cursor-grab active:cursor-grabbing",
           isDragging ? "scale-110" : "scale-100",
           disabled && "cursor-not-allowed"
         )}
         style={{ transform: `translateX(${position}px)` }}
-        onMouseDown={(e) => handleStart(e.clientX)}
-        onMouseMove={(e) => handleMove(e.clientX)}
-        onMouseUp={handleEnd}
-        onMouseLeave={handleEnd}
-        onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-        onTouchMove={(e) => handleMove(e.touches[0].clientX)}
-        onTouchEnd={handleEnd}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          handleStart(e.clientX);
+        }}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          handleStart(e.touches[0].clientX);
+        }}
         disabled={disabled}
       >
         <ChevronRight
