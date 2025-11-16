@@ -10,7 +10,8 @@ import {
   XCircle,
   Activity,
   ArrowLeft,
-  BarChart3
+  BarChart3,
+  MessageSquare
 } from "lucide-react";
 import { AdminKPICard } from "@/components/AdminKPICard";
 import { Card } from "@/components/ui/card";
@@ -444,7 +445,7 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Button
               variant="outline"
               className="h-24 flex flex-col gap-2"
@@ -484,6 +485,14 @@ const AdminDashboard = () => {
             >
               <BarChart3 className="h-6 w-6" />
               <span>Reports & Analytics</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 flex flex-col gap-2"
+              onClick={() => navigate("/customer-feedback")}
+            >
+              <MessageSquare className="h-6 w-6" />
+              <span>Customer Feedback</span>
             </Button>
           </div>
         </Card>
