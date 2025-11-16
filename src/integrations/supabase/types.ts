@@ -920,6 +920,142 @@ export type Database = {
           },
         ]
       }
+      staff_invitations: {
+        Row: {
+          accepted_at: string | null
+          assigned_role: string
+          branch_id: string | null
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_by: string | null
+          metadata: Json | null
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_role?: string
+          branch_id?: string | null
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          invitation_token: string
+          invited_by?: string | null
+          metadata?: Json | null
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_role?: string
+          branch_id?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_by?: string | null
+          metadata?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_invitations_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_onboarding: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          availability_preferences: Json | null
+          certifications: Json | null
+          completed_at: string | null
+          created_at: string | null
+          documents: Json | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          id: string
+          invitation_id: string | null
+          onboarding_status: string
+          rejection_reason: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          availability_preferences?: Json | null
+          certifications?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          documents?: Json | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          id?: string
+          invitation_id?: string | null
+          onboarding_status?: string
+          rejection_reason?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          availability_preferences?: Json | null
+          certifications?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          documents?: Json | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          id?: string
+          invitation_id?: string | null
+          onboarding_status?: string
+          rejection_reason?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_onboarding_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_onboarding_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "staff_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_onboarding_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       status_history: {
         Row: {
           created_at: string
