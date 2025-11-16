@@ -6,6 +6,7 @@ import { GradientButton } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { playStartSound, playPauseSound, playResumeSound, playCompleteSound } from "@/utils/soundEffects";
 
 const JobFlow = () => {
   const navigate = useNavigate();
@@ -44,16 +45,24 @@ const JobFlow = () => {
   };
 
   const handleStart = () => {
+    playStartSound(); // Play engaging start sound
     setJobStatus("active");
-    toast.success("Job started!");
+    toast.success("Job started! 🚀");
   };
 
   const handlePauseResume = () => {
+    if (isPaused) {
+      playResumeSound(); // Play resume sound
+      toast("Timer resumed ▶️");
+    } else {
+      playPauseSound(); // Play pause sound
+      toast("Timer paused ⏸️");
+    }
     setIsPaused(!isPaused);
-    toast(isPaused ? "Timer resumed" : "Timer paused");
   };
 
   const handleComplete = () => {
+    playCompleteSound(); // Play triumphant completion sound
     setJobStatus("completed");
     toast.success("Job completed! Great work! 🎉");
     setTimeout(() => {
