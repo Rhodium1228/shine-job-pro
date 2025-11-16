@@ -471,7 +471,7 @@ const AdminDashboard = () => {
             <Button
               variant="outline"
               className="h-24 flex flex-col gap-2"
-              onClick={() => navigate("/acsu-wallet")}
+              onClick={() => navigate("/loyalty-config")}
             >
               <TrendingUp className="h-6 w-6" />
               <span>ACSU Loyalty</span>

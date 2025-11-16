@@ -20,6 +20,7 @@ import AvailabilityReport from "./pages/AvailabilityReport";
 import AdminDashboard from "./pages/AdminDashboard";
 import StaffManagement from "./pages/StaffManagement";
 import EnhancedBookingManagement from "./pages/EnhancedBookingManagement";
+import ACSULoyaltyConfig from "./pages/ACSULoyaltyConfig";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/branch-management" element={<ProtectedRoute><ProtectedAdminRoute><BranchManagement /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
             <Route path="/availability-report" element={<ProtectedRoute><ProtectedAdminRoute><AvailabilityReport /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/loyalty-config" element={<ProtectedRoute><ProtectedAdminRoute><ACSULoyaltyConfig /></ProtectedAdminRoute></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

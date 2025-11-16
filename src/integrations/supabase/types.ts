@@ -356,6 +356,229 @@ export type Database = {
           },
         ]
       }
+      loyalty_config: {
+        Row: {
+          birthday_bonus_points: number | null
+          branch_id: string | null
+          created_at: string | null
+          id: string
+          minimum_redeem_points: number
+          points_expiry_days: number | null
+          points_per_dollar: number
+          redeem_rate: number
+          referral_bonus_points: number | null
+          updated_at: string | null
+          welcome_bonus_points: number | null
+        }
+        Insert: {
+          birthday_bonus_points?: number | null
+          branch_id?: string | null
+          created_at?: string | null
+          id?: string
+          minimum_redeem_points?: number
+          points_expiry_days?: number | null
+          points_per_dollar?: number
+          redeem_rate?: number
+          referral_bonus_points?: number | null
+          updated_at?: string | null
+          welcome_bonus_points?: number | null
+        }
+        Update: {
+          birthday_bonus_points?: number | null
+          branch_id?: string | null
+          created_at?: string | null
+          id?: string
+          minimum_redeem_points?: number
+          points_expiry_days?: number | null
+          points_per_dollar?: number
+          redeem_rate?: number
+          referral_bonus_points?: number | null
+          updated_at?: string | null
+          welcome_bonus_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_config_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: true
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_promotions: {
+        Row: {
+          branch_id: string | null
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          name: string
+          promotion_type: string
+          start_date: string
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          branch_id?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          promotion_type: string
+          start_date: string
+          updated_at?: string | null
+          value: number
+        }
+        Update: {
+          branch_id?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          promotion_type?: string
+          start_date?: string
+          updated_at?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_promotions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_promotions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_tiers: {
+        Row: {
+          benefits: Json | null
+          branch_id: string | null
+          color: string | null
+          created_at: string | null
+          discount_percentage: number | null
+          id: string
+          max_points: number | null
+          min_points: number
+          name: string
+          points_multiplier: number
+          tier_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          benefits?: Json | null
+          branch_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          discount_percentage?: number | null
+          id?: string
+          max_points?: number | null
+          min_points: number
+          name: string
+          points_multiplier?: number
+          tier_order: number
+          updated_at?: string | null
+        }
+        Update: {
+          benefits?: Json | null
+          branch_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          discount_percentage?: number | null
+          id?: string
+          max_points?: number | null
+          min_points?: number
+          name?: string
+          points_multiplier?: number
+          tier_order?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_tiers_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_transactions: {
+        Row: {
+          balance_after: number
+          branch_id: string | null
+          created_at: string | null
+          customer_id: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          points_amount: number
+          reference_id: string | null
+          staff_id: string | null
+          transaction_type: string
+        }
+        Insert: {
+          balance_after: number
+          branch_id?: string | null
+          created_at?: string | null
+          customer_id: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          points_amount: number
+          reference_id?: string | null
+          staff_id?: string | null
+          transaction_type: string
+        }
+        Update: {
+          balance_after?: number
+          branch_id?: string | null
+          created_at?: string | null
+          customer_id?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          points_amount?: number
+          reference_id?: string | null
+          staff_id?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           availability_status: string | null
