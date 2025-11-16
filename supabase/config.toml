@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.api-v1-admin-loyalty-config]
 verify_jwt = false
+
+[functions.api-v1-admin-bookings]
+verify_jwt = false
