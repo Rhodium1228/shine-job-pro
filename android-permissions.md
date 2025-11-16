@@ -1,0 +1,61 @@
+# Android Camera Permissions Configuration
+
+After running `npx cap add android`, you'll need to add camera permissions to your Android app.
+
+Add the following to `android/app/src/main/AndroidManifest.xml` inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-feature android:name="android.hardware.camera" android:required="false" />
+<uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+```
+
+The barcode scanner also needs to add this meta-data inside the `<application>` tag:
+
+```xml
+<meta-data
+    android:name="com.google.mlkit.vision.DEPENDENCIES"
+    android:value="barcode_scanning" />
+```
+
+Complete AndroidManifest.xml example:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_scanning" />
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+    </application>
+
+</manifest>
+```
