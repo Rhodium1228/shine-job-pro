@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GradientButton } from "@/components/ui/button-variants";
 import { Sparkles, Lock, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useApiAuth } from "@/hooks/useApiAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -20,7 +20,7 @@ const loginSchema = z.object({
 });
 
 const AuthPage = () => {
-  const navigate = useNavigate();
+  const { login } = useApiAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,43 +28,6 @@ const AuthPage = () => {
     email: "",
     password: "",
   });
-
-  useEffect(() => {
-    // Check if user is already logged in and redirect based on role
-    const checkAuthAndRedirect = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Check if user is admin
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        
-        navigate(roleData ? "/admin" : "/dashboard");
-      }
-    };
-
-    checkAuthAndRedirect();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        // Check if user is admin
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        
-        navigate(roleData ? "/admin" : "/dashboard");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,26 +77,12 @@ const AuthPage = () => {
         password: formData.password,
       });
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: validated.email,
-        password: validated.password,
-      });
-
-      if (error) {
-        if (error.message.includes("Invalid")) {
-          toast.error("Invalid email or password");
-        } else {
-          toast.error(error.message);
-        }
-      } else {
-        toast.success("Welcome back!");
-      }
+      await login(validated.email, validated.password);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
-      } else {
-        toast.error("An error occurred during login");
       }
+      // Error handling is done in the login hook
     } finally {
       setLoading(false);
     }
