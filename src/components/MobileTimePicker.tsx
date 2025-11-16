@@ -28,6 +28,20 @@ export const MobileTimePicker = ({
   const [tempHours, setTempHours] = useState(hours);
   const [tempMinutes, setTempMinutes] = useState(minutes);
 
+  // Preset times
+  const presets = [
+    { label: "9:00 AM", hours: 9, minutes: 0 },
+    { label: "12:00 PM", hours: 12, minutes: 0 },
+    { label: "1:00 PM", hours: 13, minutes: 0 },
+    { label: "5:00 PM", hours: 17, minutes: 0 },
+    { label: "6:00 PM", hours: 18, minutes: 0 },
+  ];
+
+  const handlePresetClick = (h: number, m: number) => {
+    setTempHours(h);
+    setTempMinutes(m);
+  };
+
   const incrementHours = () => {
     setTempHours((prev) => (prev + 1) % 24);
   };
@@ -81,11 +95,33 @@ export const MobileTimePicker = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-        <div className="bg-background border rounded-lg shadow-lg p-4">
+        <div className="bg-background border rounded-lg shadow-lg p-4 max-w-[340px]">
           <div className="text-center mb-4">
             <p className="text-sm font-medium text-muted-foreground">
               Select Time
             </p>
+          </div>
+
+          {/* Preset Times */}
+          <div className="mb-4 pb-4 border-b border-border">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Quick Select</p>
+            <div className="flex flex-wrap gap-2">
+              {presets.map((preset) => (
+                <Button
+                  key={preset.label}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePresetClick(preset.hours, preset.minutes)}
+                  className={cn(
+                    "min-h-[36px] touch-manipulation text-xs",
+                    tempHours === preset.hours && tempMinutes === preset.minutes &&
+                      "bg-primary text-primary-foreground"
+                  )}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center justify-center gap-4 mb-6">
