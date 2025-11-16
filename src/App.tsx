@@ -18,8 +18,10 @@ import BookingManagement from "./pages/BookingManagement";
 import BranchManagement from "./pages/BranchManagement";
 import BranchSelector from "./pages/BranchSelector";
 import AvailabilityReport from "./pages/AvailabilityReport";
+import AdminDashboard from "./pages/AdminDashboard";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -40,10 +42,11 @@ const App = () => (
             <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
-            <Route path="/booking-management" element={<ProtectedRoute><BookingManagement /></ProtectedRoute>} />
-            <Route path="/branch-management" element={<ProtectedRoute><BranchManagement /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/booking-management" element={<ProtectedRoute><ProtectedAdminRoute><BookingManagement /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/branch-management" element={<ProtectedRoute><ProtectedAdminRoute><BranchManagement /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
-            <Route path="/availability-report" element={<ProtectedRoute><AvailabilityReport /></ProtectedRoute>} />
+            <Route path="/availability-report" element={<ProtectedRoute><ProtectedAdminRoute><AvailabilityReport /></ProtectedAdminRoute></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

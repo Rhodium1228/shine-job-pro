@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin, Check, Coffee, WifiOff, BarChart3 } from "lucide-react";
+import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin, Check, Coffee, WifiOff, BarChart3, Shield } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useBranch } from "@/contexts/BranchContext";
 import { useUserBranches } from "@/hooks/useUserBranches";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ const Dashboard = () => {
   const {
     branches
   } = useUserBranches();
+  const { isAdmin } = useUserRole();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'busy' | 'on_break' | 'offline'>('available');
@@ -223,6 +225,15 @@ const Dashboard = () => {
               <h1 className="text-2xl font-bold">Dashboard</h1>
             </div>
             <div className="flex items-center gap-2">
+              {isAdmin && (
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+                  title="Admin Portal"
+                >
+                  <Shield className="w-5 h-5" />
+                </button>
+              )}
               <button
                 onClick={() => navigate("/availability-report")}
                 className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
