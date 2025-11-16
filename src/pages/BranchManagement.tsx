@@ -26,6 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StaffBranchAssignment } from "@/components/StaffBranchAssignment";
 
 interface Branch {
   id: string;
@@ -236,26 +238,33 @@ const BranchManagement = () => {
       </div>
 
       <div className="p-6">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading branches...</p>
-          </div>
-        ) : branches.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Building2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">No branches yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Create your first branch to get started
-            </p>
-            <Button onClick={handleCreate}>
-              <Plus className="w-5 h-5 mr-2" />
-              Create Branch
-            </Button>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {branches.map((branch) => (
+        <Tabs defaultValue="branches" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="branches">Branches</TabsTrigger>
+            <TabsTrigger value="staff">Staff Assignments</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="branches" className="space-y-4">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading branches...</p>
+              </div>
+            ) : branches.length === 0 ? (
+              <Card className="p-12 text-center">
+                <Building2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold mb-2">No branches yet</h3>
+                <p className="text-muted-foreground mb-6">
+                  Create your first branch to get started
+                </p>
+                <Button onClick={handleCreate}>
+                  <Plus className="w-5 h-5 mr-2" />
+                  Create Branch
+                </Button>
+              </Card>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {branches.map((branch) => (
               <Card key={branch.id} className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -305,6 +314,12 @@ const BranchManagement = () => {
             ))}
           </div>
         )}
+          </TabsContent>
+
+          <TabsContent value="staff">
+            <StaffBranchAssignment branches={branches} onUpdate={fetchBranches} />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

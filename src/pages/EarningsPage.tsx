@@ -99,87 +99,49 @@ const commissionData = [
   { name: "Your Earnings", value: 2850, color: "hsl(var(--success))" },
   { name: "House Commission", value: 450, color: "hsl(var(--muted))" },
 ];
-  if (period === "daily") {
-    return [
-      { name: "Mon", earnings: 320, tips: 45 },
-      { name: "Tue", earnings: 450, tips: 60 },
-      { name: "Wed", earnings: 380, tips: 52 },
-      { name: "Thu", earnings: 520, tips: 75 },
-      { name: "Fri", earnings: 680, tips: 95 },
-      { name: "Sat", earnings: 750, tips: 110 },
-      { name: "Sun", earnings: 420, tips: 58 },
-    ];
-  } else if (period === "weekly") {
-    return [
-      { name: "Week 1", earnings: 2100, tips: 285 },
-      { name: "Week 2", earnings: 2450, tips: 340 },
-      { name: "Week 3", earnings: 2200, tips: 298 },
-      { name: "Week 4", earnings: 2680, tips: 365 },
-    ];
-  } else {
-    return [
-      { name: "Jan", earnings: 9500, tips: 1250 },
-      { name: "Feb", earnings: 10200, tips: 1380 },
-      { name: "Mar", earnings: 11100, tips: 1520 },
-      { name: "Apr", earnings: 10800, tips: 1450 },
-      { name: "May", earnings: 12300, tips: 1680 },
-      { name: "Jun", earnings: 11900, tips: 1590 },
-    ];
-  }
-};
 
-const paymentHistory = [
-  {
-    id: "1",
-    type: "booking" as const,
-    amount: 120,
-    client: "Sarah Johnson",
-    service: "Deep Tissue Massage",
-    date: new Date(),
-    status: "completed" as const,
-  },
-  {
-    id: "2",
-    type: "tip" as const,
-    amount: 25,
-    client: "Michael Chen",
-    service: "Swedish Massage",
-    date: new Date(),
-    status: "completed" as const,
-  },
-  {
-    id: "3",
-    type: "booking" as const,
-    amount: 150,
-    client: "Emma Davis",
-    service: "Hot Stone Therapy",
-    date: new Date(Date.now() - 86400000),
-    status: "completed" as const,
-  },
-  {
-    id: "4",
-    type: "commission" as const,
-    amount: 180,
-    client: "Monthly Commission",
-    service: "Service Commission",
-    date: new Date(Date.now() - 86400000 * 2),
-    status: "processing" as const,
-  },
-  {
-    id: "5",
-    type: "booking" as const,
-    amount: 130,
-    client: "James Wilson",
-    service: "Sports Massage",
-    date: new Date(Date.now() - 86400000 * 3),
-    status: "completed" as const,
-  },
-];
+const EarningsPage = () => {
+  const { selectedBranch } = useBranch();
+  const { toast } = useToast();
+  const [timePeriod, setTimePeriod] = useState("daily");
+  const [completedJobs, setCompletedJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterType, setFilterType] = useState<"all" | "booking" | "tip" | "commission">("all");
+  const [chartType, setChartType] = useState<"bar" | "line" | "area">("bar");
 
-const commissionData = [
-  { name: "Your Earnings", value: 2850, color: "hsl(var(--success))" },
-  { name: "House Commission", value: 450, color: "hsl(var(--muted))" },
-];
+  useEffect(() => {
+    fetchCompletedJobs();
+  }, [selectedBranch]);
+
+  const fetchCompletedJobs = async () => {
+    if (!selectedBranch) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("active_jobs")
+        .select("*")
+        .eq("staff_id", user.id)
+        .eq("branch_id", selectedBranch.id)
+        .eq("status", "completed")
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false });
+
+      if (error) throw error;
+      setCompletedJobs(data || []);
+    } catch (error) {
+      console.error("Error fetching completed jobs:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load earnings data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateChartDataFromJobs = () => {
     // Process completedJobs to create chart data based on timePeriod
