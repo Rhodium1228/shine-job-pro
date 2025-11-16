@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
 import { verifyAuth, requireAdmin, corsHeaders } from '../_shared/auth-middleware.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -14,15 +15,39 @@ serve(async (req) => {
     const context = await verifyAuth(authHeader);
     requireAdmin(context); // Only admins can create staff
 
-    const { email, fullName, phone, branchId, assignedRole, hourlyRate, specialties } = await req.json();
+    // Validate input
+    const staffCreateSchema = z.object({
+      email: z.string().email('Invalid email format').max(255, 'Email cannot exceed 255 characters'),
+      fullName: z.string().trim().min(1, 'Full name is required').max(100, 'Full name cannot exceed 100 characters'),
+      phone: z.string().trim().max(20, 'Phone cannot exceed 20 characters').optional(),
+      branchId: z.string().uuid('Invalid branch ID format'),
+      assignedRole: z.enum(['admin', 'staff'], { errorMap: () => ({ message: 'Role must be admin or staff' }) }),
+      hourlyRate: z.number().positive('Hourly rate must be positive').max(1000, 'Hourly rate cannot exceed 1000').optional(),
+      specialties: z.array(z.string().max(50, 'Specialty cannot exceed 50 characters')).max(10, 'Cannot have more than 10 specialties').optional()
+    });
 
-    // Validate required fields
-    if (!email || !fullName || !branchId || !assignedRole) {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: email, fullName, branchId, assignedRole' }),
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const validationResult = staffCreateSchema.safeParse(body);
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validationResult.error.issues.map(i => i.message)
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { email, fullName, phone, branchId, assignedRole, hourlyRate, specialties } = validationResult.data;
 
     console.log(`Admin ${context.email} creating staff member: ${email}`);
 

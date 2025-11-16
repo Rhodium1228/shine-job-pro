@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
 import { verifyAuth, corsHeaders } from '../_shared/auth-middleware.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,14 +13,36 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     const context = await verifyAuth(authHeader);
 
-    const { customerId, points, reason, branchId } = await req.json();
+    // Validate input
+    const awardSchema = z.object({
+      customerId: z.string().min(1, 'Customer ID is required'),
+      points: z.number().int().positive('Points must be positive').max(10000, 'Points cannot exceed 10000'),
+      reason: z.string().trim().max(500, 'Reason cannot exceed 500 characters').optional(),
+      branchId: z.string().uuid('Invalid branch ID format').optional()
+    });
 
-    if (!customerId || !points || points <= 0) {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
       return new Response(
-        JSON.stringify({ error: 'Customer ID and valid points amount are required' }),
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const validationResult = awardSchema.safeParse(body);
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validationResult.error.issues.map(i => i.message)
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { customerId, points, reason, branchId } = validationResult.data;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
