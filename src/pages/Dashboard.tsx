@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Calendar, Clock, DollarSign, User, TrendingUp } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
+import BreakButton from "@/components/BreakButton";
 
 // Mock data
 const mockBookings = [
@@ -103,6 +104,11 @@ const Dashboard = () => {
 
       {/* Today's Schedule */}
       <div className="p-6">
+        {/* Break Button */}
+        <div className="mb-6 animate-slide-up">
+          <BreakButton isOnBreak={false} />
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-foreground">Today's Schedule</h3>
           <span className="text-sm text-muted-foreground">Monday, Jan 15</span>
