@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin, Check, Coffee, WifiOff } from "lucide-react";
+import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin, Check, Coffee, WifiOff, BarChart3 } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
@@ -211,7 +211,16 @@ const Dashboard = () => {
               <p className="text-white/80 text-sm mb-1">Welcome back</p>
               <h1 className="text-2xl font-bold">Dashboard</h1>
             </div>
-            <AvailabilityStatusToggle />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/availability-report")}
+                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors"
+                title="View Availability Report"
+              >
+                <BarChart3 className="w-5 h-5" />
+              </button>
+              <AvailabilityStatusToggle />
+            </div>
           </div>
 
           {/* Status Banner */}

@@ -60,20 +60,6 @@ const BreakTimer = () => {
     }
   };
 
-  const updateAvailabilityStatus = async (status: 'available' | 'busy' | 'on_break' | 'offline') => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ availability_status: status })
-      .eq('id', user.id);
-
-    if (error) {
-      console.error('Error updating availability status:', error);
-    }
-  };
-
   const handleStartBreak = async () => {
     const result = await handleStatusChange('on_break');
     
@@ -114,8 +100,12 @@ const BreakTimer = () => {
         toast.success("Break ended - welcome back!");
       }
     } else {
-      await updateAvailabilityStatus('available');
-      toast.success("Break ended - welcome back!");
+      const result = await handleStatusChange('available', 'on_break');
+      if (result.success) {
+        toast.success("Break ended - welcome back!");
+      } else {
+        toast.error("Failed to end break");
+      }
     }
     
     setIsOnBreak(false);
