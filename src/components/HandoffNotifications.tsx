@@ -90,6 +90,19 @@ export const HandoffNotifications = () => {
   };
 
   const handleAccept = async (notification: HandoffNotification) => {
+    // Check receiver's status before accepting
+    const { data: receiverProfile } = await supabase
+      .from('profiles')
+      .select('availability_status')
+      .eq('id', notification.to_staff_id)
+      .single();
+
+    if (receiverProfile?.availability_status === 'offline' || 
+        receiverProfile?.availability_status === 'on_break') {
+      toast.error('Cannot accept handoffs while offline or on break');
+      return;
+    }
+
     const { error } = await supabase
       .from('handoff_notifications')
       .update({ status: 'accepted' })
