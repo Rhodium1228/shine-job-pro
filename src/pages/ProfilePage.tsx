@@ -410,42 +410,46 @@ const ProfilePage = () => {
           </div>
           <div className="space-y-3">
             {Object.entries(workingHours).map(([day, hours]) => (
-              <div key={day} className="flex items-center gap-3">
-                <Switch
-                  checked={hours.enabled}
-                  onCheckedChange={(checked) =>
-                    setWorkingHours({
-                      ...workingHours,
-                      [day]: { ...hours, enabled: checked },
-                    })
-                  }
-                />
-                <span className="w-24 font-medium text-foreground capitalize">{day}</span>
-                <Input
-                  type="time"
-                  value={hours.start}
-                  onChange={(e) =>
-                    setWorkingHours({
-                      ...workingHours,
-                      [day]: { ...hours, start: e.target.value },
-                    })
-                  }
-                  disabled={!hours.enabled}
-                  className="w-28"
-                />
-                <span className="text-muted-foreground">to</span>
-                <Input
-                  type="time"
-                  value={hours.end}
-                  onChange={(e) =>
-                    setWorkingHours({
-                      ...workingHours,
-                      [day]: { ...hours, end: e.target.value },
-                    })
-                  }
-                  disabled={!hours.enabled}
-                  className="w-28"
-                />
+              <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border border-border/50">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Switch
+                    checked={hours.enabled}
+                    onCheckedChange={(checked) =>
+                      setWorkingHours({
+                        ...workingHours,
+                        [day]: { ...hours, enabled: checked },
+                      })
+                    }
+                  />
+                  <span className="font-medium text-foreground capitalize flex-shrink-0">{day}</span>
+                </div>
+                <div className="flex items-center gap-2 flex-1 pl-9 sm:pl-0">
+                  <Input
+                    type="time"
+                    value={hours.start}
+                    onChange={(e) =>
+                      setWorkingHours({
+                        ...workingHours,
+                        [day]: { ...hours, start: e.target.value },
+                      })
+                    }
+                    disabled={!hours.enabled}
+                    className="flex-1 min-w-0"
+                  />
+                  <span className="text-muted-foreground text-sm flex-shrink-0">to</span>
+                  <Input
+                    type="time"
+                    value={hours.end}
+                    onChange={(e) =>
+                      setWorkingHours({
+                        ...workingHours,
+                        [day]: { ...hours, end: e.target.value },
+                      })
+                    }
+                    disabled={!hours.enabled}
+                    className="flex-1 min-w-0"
+                  />
+                </div>
               </div>
             ))}
           </div>
