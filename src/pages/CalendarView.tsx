@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, addMonths, subMonths, addWeeks, subWeeks } from "date-fns";
+import { format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useBranch } from "@/contexts/BranchContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import CalendarGrid from "@/components/CalendarGrid";
 import BookingDetailSheet from "@/components/BookingDetailSheet";
 import BottomNav from "@/components/BottomNav";
@@ -80,15 +83,81 @@ const generateMockBookings = () => {
 
 const CalendarView = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { selectedBranch } = useBranch();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const bookings = generateMockBookings();
+  // Fetch bookings for the current view
+  useEffect(() => {
+    fetchBookings();
+  }, [currentDate, viewMode, selectedBranch]);
+
+  const fetchBookings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Calculate date range based on view mode
+      let startDate, endDate;
+      if (viewMode === "month") {
+        startDate = startOfMonth(currentDate);
+        endDate = endOfMonth(currentDate);
+      } else {
+        startDate = startOfWeek(currentDate);
+        endDate = endOfWeek(currentDate);
+      }
+
+      let query = supabase
+        .from("bookings")
+        .select("*")
+        .eq("staff_id", user.id)
+        .gte("booking_time", startDate.toISOString())
+        .lte("booking_time", endDate.toISOString())
+        .order("booking_time", { ascending: true });
+
+      // Filter by branch if one is selected
+      if (selectedBranch) {
+        query = query.eq("branch_id", selectedBranch.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      const formattedBookings = (data || []).map((booking) => ({
+        id: booking.id,
+        clientName: booking.client_name,
+        service: booking.service,
+        time: format(new Date(booking.booking_time), "h:mm a"),
+        duration: booking.duration,
+        status: booking.status,
+        price: booking.price,
+        date: new Date(booking.booking_time),
+        phone: booking.client_phone,
+        email: booking.client_email,
+        notes: booking.notes,
+      }));
+
+      setBookings(formattedBookings);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load bookings",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Swipe detection
   const minSwipeDistance = 50;
