@@ -98,6 +98,27 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_staff: {
+        Row: {
+          created_at: string
+          favorite_staff_id: string
+          id: string
+          staff_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorite_staff_id: string
+          id?: string
+          staff_id: string
+        }
+        Update: {
+          created_at?: string
+          favorite_staff_id?: string
+          id?: string
+          staff_id?: string
+        }
+        Relationships: []
+      }
       handoff_notifications: {
         Row: {
           client_name: string
@@ -147,6 +168,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          availability_status: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
@@ -163,6 +185,7 @@ export type Database = {
           working_hours: Json | null
         }
         Insert: {
+          availability_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
@@ -179,6 +202,7 @@ export type Database = {
           working_hours?: Json | null
         }
         Update: {
+          availability_status?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
