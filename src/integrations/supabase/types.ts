@@ -288,6 +288,101 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_reviews: {
+        Row: {
+          booking_id: string | null
+          branch_id: string | null
+          created_at: string | null
+          customer_email: string | null
+          customer_name: string
+          id: string
+          is_featured: boolean | null
+          metadata: Json | null
+          rating: number
+          responded_at: string | null
+          responded_by: string | null
+          response_text: string | null
+          review_text: string | null
+          sentiment: string | null
+          sentiment_score: number | null
+          service: string
+          staff_id: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          branch_id?: string | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name: string
+          id?: string
+          is_featured?: boolean | null
+          metadata?: Json | null
+          rating: number
+          responded_at?: string | null
+          responded_by?: string | null
+          response_text?: string | null
+          review_text?: string | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+          service: string
+          staff_id?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          branch_id?: string | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          id?: string
+          is_featured?: boolean | null
+          metadata?: Json | null
+          rating?: number
+          responded_at?: string | null
+          responded_by?: string | null
+          response_text?: string | null
+          review_text?: string | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+          service?: string
+          staff_id?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_responded_by_fkey"
+            columns: ["responded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorite_staff: {
         Row: {
           created_at: string
@@ -308,6 +403,145 @@ export type Database = {
           staff_id?: string
         }
         Relationships: []
+      }
+      feedback_surveys: {
+        Row: {
+          booking_id: string | null
+          branch_id: string | null
+          cleanliness_rating: number | null
+          completed_at: string | null
+          created_at: string | null
+          customer_email: string | null
+          customer_name: string
+          id: string
+          improvements_text: string | null
+          overall_rating: number
+          positive_aspects: string | null
+          service: string
+          service_quality_rating: number | null
+          staff_friendliness_rating: number | null
+          staff_id: string | null
+          value_rating: number | null
+          would_recommend: boolean | null
+        }
+        Insert: {
+          booking_id?: string | null
+          branch_id?: string | null
+          cleanliness_rating?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name: string
+          id?: string
+          improvements_text?: string | null
+          overall_rating: number
+          positive_aspects?: string | null
+          service: string
+          service_quality_rating?: number | null
+          staff_friendliness_rating?: number | null
+          staff_id?: string | null
+          value_rating?: number | null
+          would_recommend?: boolean | null
+        }
+        Update: {
+          booking_id?: string | null
+          branch_id?: string | null
+          cleanliness_rating?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          id?: string
+          improvements_text?: string | null
+          overall_rating?: number
+          positive_aspects?: string | null
+          service?: string
+          service_quality_rating?: number | null
+          staff_friendliness_rating?: number | null
+          staff_id?: string | null
+          value_rating?: number | null
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_surveys_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_surveys_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_surveys_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follow_up_messages: {
+        Row: {
+          booking_id: string | null
+          created_at: string | null
+          customer_email: string
+          id: string
+          message_body: string
+          message_type: string
+          metadata: Json | null
+          review_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string | null
+          customer_email: string
+          id?: string
+          message_body: string
+          message_type: string
+          metadata?: Json | null
+          review_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string | null
+          customer_email?: string
+          id?: string
+          message_body?: string
+          message_type?: string
+          metadata?: Json | null
+          review_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follow_up_messages_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "customer_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       handoff_notifications: {
         Row: {
