@@ -12,6 +12,49 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting store
+const rateLimitStore = new Map<string, number[]>();
+
+/**
+ * Check rate limit for an identifier (IP or user ID)
+ * Throws error if rate limit exceeded
+ */
+export function checkRateLimit(identifier: string, maxRequests: number, windowMs: number) {
+  const now = Date.now();
+  const userRequests = rateLimitStore.get(identifier) || [];
+  
+  // Filter to only recent requests within the time window
+  const recentRequests = userRequests.filter(time => now - time < windowMs);
+  
+  if (recentRequests.length >= maxRequests) {
+    throw new Error('Rate limit exceeded. Please try again later.');
+  }
+  
+  // Add current request
+  recentRequests.push(now);
+  rateLimitStore.set(identifier, recentRequests);
+  
+  // Cleanup old entries periodically
+  if (Math.random() < 0.01) {
+    cleanupRateLimitStore(windowMs);
+  }
+}
+
+/**
+ * Clean up expired entries from rate limit store
+ */
+function cleanupRateLimitStore(windowMs: number) {
+  const now = Date.now();
+  for (const [key, times] of rateLimitStore.entries()) {
+    const recentTimes = times.filter(time => now - time < windowMs);
+    if (recentTimes.length === 0) {
+      rateLimitStore.delete(key);
+    } else {
+      rateLimitStore.set(key, recentTimes);
+    }
+  }
+}
+
 /**
  * Verify JWT token and extract user context
  * Returns AuthContext with user details and permissions
