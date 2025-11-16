@@ -6,6 +6,7 @@ import { GradientButton } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useBranch } from "@/contexts/BranchContext";
 import { playStartSound, playPauseSound, playResumeSound, playCompleteSound } from "@/utils/soundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { HandoffDialog } from "@/components/HandoffDialog";
@@ -22,6 +23,7 @@ import {
 const JobFlow = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { selectedBranch } = useBranch();
   
   // Get booking data from URL params
   const bookingData = {

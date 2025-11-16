@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DollarSign, TrendingUp, Percent, Calendar, ChevronDown, PieChart as PieChartIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useBranch } from "@/contexts/BranchContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import EarningsChart from "@/components/EarningsChart";
 import PaymentHistoryCard from "@/components/PaymentHistoryCard";
 import BottomNav from "@/components/BottomNav";
@@ -98,11 +101,105 @@ const commissionData = [
 ];
 
 const EarningsPage = () => {
+  const { toast } = useToast();
+  const { selectedBranch } = useBranch();
   const [timePeriod, setTimePeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const [chartType, setChartType] = useState<"area" | "line" | "bar">("area");
   const [filterType, setFilterType] = useState<"all" | "booking" | "tip" | "commission">("all");
+  const [completedJobs, setCompletedJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const chartData = generateChartData(timePeriod);
+  // Fetch completed jobs for earnings calculation
+  useEffect(() => {
+    fetchCompletedJobs();
+  }, [selectedBranch, timePeriod]);
+
+  const fetchCompletedJobs = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Calculate date range based on time period
+      const now = new Date();
+      let startDate = new Date();
+      
+      if (timePeriod === "daily") {
+        startDate.setDate(now.getDate() - 7); // Last 7 days
+      } else if (timePeriod === "weekly") {
+        startDate.setDate(now.getDate() - 28); // Last 4 weeks
+      } else {
+        startDate.setMonth(now.getMonth() - 6); // Last 6 months
+      }
+
+      let query = supabase
+        .from("active_jobs")
+        .select("*")
+        .eq("staff_id", user.id)
+        .eq("status", "completed")
+        .gte("completed_at", startDate.toISOString())
+        .order("completed_at", { ascending: true });
+
+      // Filter by branch if one is selected
+      if (selectedBranch) {
+        // Note: active_jobs table needs branch_id column to filter
+        // For now, fetch all and we can add branch_id in future migration
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      setCompletedJobs(data || []);
+    } catch (error) {
+      console.error("Error fetching completed jobs:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load earnings data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate chart data from completed jobs
+  const generateChartDataFromJobs = () => {
+    // Process completedJobs to create chart data based on timePeriod
+    // This is a simplified version - you can enhance this
+    if (timePeriod === "daily") {
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        return {
+          name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          earnings: 0,
+          tips: 0,
+        };
+      });
+
+      completedJobs.forEach((job) => {
+        const jobDate = new Date(job.completed_at);
+        const dayIndex = last7Days.findIndex(day => {
+          const date = new Date();
+          date.setDate(date.getDate() - (6 - last7Days.indexOf(day)));
+          return date.toDateString() === jobDate.toDateString();
+        });
+
+        if (dayIndex !== -1) {
+          const price = parseFloat(job.price.replace(/[^0-9.-]+/g, ""));
+          last7Days[dayIndex].earnings += price;
+          last7Days[dayIndex].tips += Math.floor(price * 0.15); // Assume 15% tips
+        }
+      });
+
+      return last7Days;
+    }
+    
+    // Return mock data for other periods for now
+    return generateChartData(timePeriod);
+  };
+
+  const chartData = loading ? generateChartData(timePeriod) : generateChartDataFromJobs();
   
   const totalEarnings = chartData.reduce((sum, item) => sum + item.earnings, 0);
   const totalTips = chartData.reduce((sum, item) => sum + (item.tips || 0), 0);
