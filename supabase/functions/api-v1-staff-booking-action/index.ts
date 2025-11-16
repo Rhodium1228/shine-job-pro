@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
 import { verifyAuth, corsHeaders } from '../_shared/auth-middleware.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,21 +13,35 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     const context = await verifyAuth(authHeader);
 
-    const { bookingId, action, reason } = await req.json();
+    // Validate input
+    const bookingActionSchema = z.object({
+      bookingId: z.string().uuid('Invalid booking ID format'),
+      action: z.enum(['accept', 'decline'], { errorMap: () => ({ message: 'Action must be either accept or decline' }) }),
+      reason: z.string().trim().max(500, 'Reason cannot exceed 500 characters').optional()
+    });
 
-    if (!bookingId || !action) {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
       return new Response(
-        JSON.stringify({ error: 'Booking ID and action are required' }),
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!['accept', 'decline'].includes(action)) {
+    const validationResult = bookingActionSchema.safeParse(body);
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid action. Must be "accept" or "decline"' }),
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validationResult.error.issues.map(i => i.message)
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { bookingId, action, reason } = validationResult.data;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
