@@ -1,0 +1,232 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Clock, User, DollarSign, CheckCircle, Pause, Play } from "lucide-react";
+import SlideToStart from "@/components/SlideToStart";
+import { GradientButton } from "@/components/ui/button-variants";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const JobFlow = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get booking data from URL params
+  const bookingData = {
+    id: searchParams.get("id") || "1",
+    clientName: searchParams.get("client") || "Client",
+    service: searchParams.get("service") || "Service",
+    price: searchParams.get("price") || "$120",
+    duration: searchParams.get("duration") || "60 min",
+  };
+
+  const [jobStatus, setJobStatus] = useState<"ready" | "active" | "paused" | "completed">("ready");
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (jobStatus === "active" && !isPaused) {
+      interval = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [jobStatus, isPaused]);
+
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleStart = () => {
+    setJobStatus("active");
+    toast.success("Job started!");
+  };
+
+  const handlePauseResume = () => {
+    setIsPaused(!isPaused);
+    toast(isPaused ? "Timer resumed" : "Timer paused");
+  };
+
+  const handleComplete = () => {
+    setJobStatus("completed");
+    toast.success("Job completed! Great work! 🎉");
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 2000);
+  };
+
+  const handleCancel = () => {
+    if (confirm("Are you sure you want to cancel this job?")) {
+      navigate("/dashboard");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="gradient-primary text-white p-6 pb-8 rounded-b-[2rem]">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={handleCancel}
+            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-xl font-bold">
+            {jobStatus === "ready" && "Ready to Start"}
+            {jobStatus === "active" && "Job in Progress"}
+            {jobStatus === "paused" && "Job Paused"}
+            {jobStatus === "completed" && "Completed!"}
+          </h1>
+          <div className="w-10" />
+        </div>
+
+        {/* Client Info Card */}
+        <div className="glass-card rounded-2xl p-5 animate-slide-up">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-full gradient-accent flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">{bookingData.clientName}</h3>
+              <p className="text-sm text-white/80">{bookingData.service}</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4" />
+              <span>{bookingData.duration}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <DollarSign className="w-4 h-4" />
+              <span className="font-semibold">{bookingData.price}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="p-6 space-y-6">
+        {/* Timer Display */}
+        {(jobStatus === "active" || jobStatus === "paused" || jobStatus === "completed") && (
+          <div className={cn(
+            "glass-card rounded-3xl p-8 text-center animate-scale-in",
+            jobStatus === "completed" && "gradient-success border-2 border-success"
+          )}>
+            <div className="mb-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                {jobStatus === "completed" ? "Total Time" : "Elapsed Time"}
+              </p>
+              <div className={cn(
+                "text-6xl font-bold tracking-tight",
+                jobStatus === "completed" ? "text-white" : "gradient-primary bg-clip-text text-transparent"
+              )}>
+                {formatTime(elapsedTime)}
+              </div>
+            </div>
+
+            {jobStatus === "completed" && (
+              <div className="flex items-center justify-center gap-2 text-white">
+                <CheckCircle className="w-6 h-6" />
+                <span className="text-lg font-semibold">Job Completed!</span>
+              </div>
+            )}
+
+            {jobStatus === "active" && (
+              <div className={cn(
+                "mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
+                isPaused ? "bg-warning/20 text-warning" : "bg-success/20 text-success"
+              )}>
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  isPaused ? "bg-warning" : "bg-success animate-pulse"
+                )} />
+                {isPaused ? "Paused" : "In Progress"}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="space-y-4 animate-slide-up" style={{ animationDelay: "100ms" }}>
+          {jobStatus === "ready" && (
+            <>
+              <p className="text-center text-muted-foreground mb-4">
+                Slide to confirm you're starting this job
+              </p>
+              <SlideToStart onComplete={handleStart} />
+            </>
+          )}
+
+          {(jobStatus === "active" || jobStatus === "paused") && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={handlePauseResume}
+                  variant="outline"
+                  className="h-14 text-base"
+                >
+                  {isPaused ? (
+                    <>
+                      <Play className="w-5 h-5 mr-2" />
+                      Resume
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="w-5 h-5 mr-2" />
+                      Pause
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="h-14 text-base border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  Cancel Job
+                </Button>
+              </div>
+
+              <GradientButton
+                onClick={handleComplete}
+                variant="success"
+                className="w-full h-14 text-lg"
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Complete Job
+              </GradientButton>
+            </>
+          )}
+
+          {jobStatus === "completed" && (
+            <div className="text-center space-y-4">
+              <div className="text-5xl animate-bounce">🎉</div>
+              <p className="text-muted-foreground">
+                Returning to dashboard...
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Service Notes */}
+        {jobStatus === "active" && (
+          <div className="glass-card rounded-2xl p-5 animate-fade-in" style={{ animationDelay: "200ms" }}>
+            <h4 className="font-semibold text-foreground mb-2">Service Notes</h4>
+            <p className="text-sm text-muted-foreground">
+              Remember to confirm client preferences and ensure comfort throughout the service.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default JobFlow;
