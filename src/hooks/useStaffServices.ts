@@ -49,6 +49,8 @@ export const useStaffServices = (staffId?: string) => {
   // Add service mutation
   const addService = useMutation({
     mutationFn: async ({ staffId, service }: { staffId: string; service: StaffServiceInput }) => {
+      console.log('Adding service:', { staffId, service });
+      
       const { data, error } = await supabase
         .from('staff_services')
         .insert({
@@ -58,7 +60,11 @@ export const useStaffServices = (staffId?: string) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding service:', error);
+        throw error;
+      }
+      console.log('Service added successfully:', data);
       return data;
     },
     onSuccess: () => {
@@ -69,9 +75,14 @@ export const useStaffServices = (staffId?: string) => {
       });
     },
     onError: (error: any) => {
+      console.error('Add service mutation error:', error);
+      const errorMessage = error.message?.includes('permission')
+        ? "You don't have permission to add services for this staff member"
+        : error.message || "Failed to add service";
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to add service",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -80,6 +91,8 @@ export const useStaffServices = (staffId?: string) => {
   // Update service mutation
   const updateService = useMutation({
     mutationFn: async ({ serviceId, updates }: { serviceId: string; updates: Partial<StaffServiceInput> }) => {
+      console.log('Updating service:', { serviceId, updates });
+      
       const { data, error } = await supabase
         .from('staff_services')
         .update(updates)
@@ -87,7 +100,11 @@ export const useStaffServices = (staffId?: string) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating service:', error);
+        throw error;
+      }
+      console.log('Service updated successfully:', data);
       return data;
     },
     onSuccess: () => {
@@ -98,9 +115,14 @@ export const useStaffServices = (staffId?: string) => {
       });
     },
     onError: (error: any) => {
+      console.error('Update service mutation error:', error);
+      const errorMessage = error.message?.includes('permission')
+        ? "You don't have permission to update this service"
+        : error.message || "Failed to update service";
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to update service",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -145,12 +167,18 @@ export const useStaffServices = (staffId?: string) => {
   // Delete service mutation
   const deleteService = useMutation({
     mutationFn: async (serviceId: string) => {
+      console.log('Deleting service:', serviceId);
+      
       const { error } = await supabase
         .from('staff_services')
         .delete()
         .eq('id', serviceId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting service:', error);
+        throw error;
+      }
+      console.log('Service deleted successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-services'] });
@@ -160,9 +188,14 @@ export const useStaffServices = (staffId?: string) => {
       });
     },
     onError: (error: any) => {
+      console.error('Delete service mutation error:', error);
+      const errorMessage = error.message?.includes('permission')
+        ? "You don't have permission to delete this service"
+        : error.message || "Failed to delete service";
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to delete service",
+        description: errorMessage,
         variant: "destructive",
       });
     },

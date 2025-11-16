@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface StaffServicesDialogProps {
   open: boolean;
@@ -39,6 +40,7 @@ export const StaffServicesDialog = ({
   staffId,
   staffName,
 }: StaffServicesDialogProps) => {
+  const { toast } = useToast();
   const { isAdmin } = useUserRole();
   const { services, isLoading, addService, updateService, approveService, deleteService } =
     useStaffServices(staffId);
@@ -66,7 +68,34 @@ export const StaffServicesDialog = ({
   };
 
   const handleAddService = () => {
-    if (!newService.service_name || !newService.base_price) return;
+    if (!newService.service_name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Service name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newService.base_price || parseFloat(newService.base_price) <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Base price must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!staffId) {
+      toast({
+        title: "Error",
+        description: "Staff ID is missing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('Adding service for staff:', { staffId, staffName, service: newService });
 
     addService({
       staffId,
@@ -89,10 +118,23 @@ export const StaffServicesDialog = ({
   };
 
   const handlePriceUpdate = (service: StaffService, customPrice: string) => {
+    const price = customPrice ? parseFloat(customPrice) : null;
+    
+    if (price !== null && price <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Custom price must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('Updating price for service:', { serviceId: service.id, customPrice: price });
+    
     updateService({
       serviceId: service.id,
       updates: {
-        custom_price: customPrice ? parseFloat(customPrice) : null,
+        custom_price: price,
       },
     });
   };
