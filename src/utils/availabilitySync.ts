@@ -136,8 +136,47 @@ export const resumeAutoPausedJobs = async (): Promise<number> => {
   return jobs.length;
 };
 
+// Log status change to history
+const logStatusChange = async (userId: string, newStatus: AvailabilityStatus, oldStatus?: AvailabilityStatus): Promise<void> => {
+  try {
+    // End the previous status period if exists
+    if (oldStatus) {
+      const { data: activeHistory } = await supabase
+        .from('status_history')
+        .select('*')
+        .eq('staff_id', userId)
+        .is('ended_at', null)
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (activeHistory) {
+        const duration = Math.floor((Date.now() - new Date(activeHistory.started_at).getTime()) / 1000);
+        await supabase
+          .from('status_history')
+          .update({
+            ended_at: new Date().toISOString(),
+            duration_seconds: duration
+          })
+          .eq('id', activeHistory.id);
+      }
+    }
+
+    // Start new status period
+    await supabase
+      .from('status_history')
+      .insert({
+        staff_id: userId,
+        status: newStatus,
+        started_at: new Date().toISOString()
+      });
+  } catch (error) {
+    console.error('Error logging status change:', error);
+  }
+};
+
 // Update user's availability status
-export const updateAvailabilityStatus = async (status: AvailabilityStatus): Promise<void> => {
+export const updateAvailabilityStatus = async (status: AvailabilityStatus, previousStatus?: AvailabilityStatus): Promise<void> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
@@ -150,6 +189,9 @@ export const updateAvailabilityStatus = async (status: AvailabilityStatus): Prom
     console.error('Error updating availability status:', error);
     throw error;
   }
+
+  // Log the status change for analytics
+  await logStatusChange(user.id, status, previousStatus);
 };
 
 // Handle status change with job synchronization
@@ -164,7 +206,7 @@ export const handleStatusChange = async (
     if ((newStatus === 'on_break' || newStatus === 'offline') && activeJobCount > 0) {
       const reason = newStatus === 'on_break' ? 'auto_break' : 'auto_offline';
       const pausedCount = await pauseAllActiveJobs(reason);
-      await updateAvailabilityStatus(newStatus);
+      await updateAvailabilityStatus(newStatus, currentStatus);
       
       return {
         success: true,
@@ -179,7 +221,7 @@ export const handleStatusChange = async (
       
       if (autoPausedIds.length > 0) {
         const resumedCount = await resumeAutoPausedJobs();
-        await updateAvailabilityStatus(newStatus);
+        await updateAvailabilityStatus(newStatus, currentStatus);
         
         return {
           success: true,
@@ -190,7 +232,7 @@ export const handleStatusChange = async (
     }
 
     // Simple status change (no jobs affected)
-    await updateAvailabilityStatus(newStatus);
+    await updateAvailabilityStatus(newStatus, currentStatus);
     return {
       success: true,
       jobsAffected: 0
@@ -208,14 +250,16 @@ export const handleStatusChange = async (
 
 // Set status to busy when starting a job (called from JobFlow)
 export const setStatusToBusyOnJobStart = async (): Promise<void> => {
-  await updateAvailabilityStatus('busy');
+  const currentStatus = await getCurrentAvailabilityStatus();
+  await updateAvailabilityStatus('busy', currentStatus || undefined);
 };
 
 // Set status to available when last job completes (called from JobFlow)
 export const setStatusToAvailableOnLastJobComplete = async (): Promise<void> => {
   const activeCount = await countActiveJobs();
   if (activeCount === 0) {
-    await updateAvailabilityStatus('available');
+    const currentStatus = await getCurrentAvailabilityStatus();
+    await updateAvailabilityStatus('available', currentStatus || undefined);
   }
 };
 

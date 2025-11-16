@@ -17,6 +17,7 @@ import ACSUWallet from "./pages/ACSUWallet";
 import BookingManagement from "./pages/BookingManagement";
 import BranchManagement from "./pages/BranchManagement";
 import BranchSelector from "./pages/BranchSelector";
+import AvailabilityReport from "./pages/AvailabilityReport";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/booking-management" element={<ProtectedRoute><BookingManagement /></ProtectedRoute>} />
             <Route path="/branch-management" element={<ProtectedRoute><BranchManagement /></ProtectedRoute>} />
             <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/availability-report" element={<ProtectedRoute><AvailabilityReport /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
