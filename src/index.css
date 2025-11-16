@@ -138,6 +138,15 @@ All colors MUST be HSL.
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-soft);
   }
+
+  /* QR Scanner styles */
+  body.qr-scanner-active {
+    background: transparent !important;
+  }
+  
+  body.qr-scanner-active .app-content {
+    visibility: hidden;
+  }
   
   .gradient-primary {
     background: var(--gradient-primary);
