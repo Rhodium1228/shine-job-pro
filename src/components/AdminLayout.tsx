@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { LogOut, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -11,6 +11,14 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { useState } from "react";
 
 interface AdminLayoutProps {
@@ -19,7 +27,31 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const routeLabels: Record<string, string> = {
+    "/admin": "Dashboard",
+    "/staff-management": "Staff Management",
+    "/booking-management": "Bookings",
+    "/branch-management": "Branches",
+    "/availability-report": "Availability",
+    "/reports-analytics": "Reports",
+    "/loyalty-config": "Loyalty Config",
+    "/customer-feedback": "Feedback",
+    "/staff-invite": "Invite Staff",
+  };
+
+  const getBreadcrumbs = () => {
+    const path = location.pathname;
+    const label = routeLabels[path] || "Page";
+    return [
+      { label: "Admin", path: "/admin" },
+      { label, path },
+    ];
+  };
+
+  const breadcrumbs = getBreadcrumbs();
 
   const handleLogout = async () => {
     try {
@@ -106,6 +138,28 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </Button>
             </div>
           </header>
+
+          {/* Breadcrumbs */}
+          <div className="border-b bg-background px-4 py-3">
+            <Breadcrumb>
+              <BreadcrumbList>
+                {breadcrumbs.map((crumb, index) => (
+                  <BreadcrumbItem key={crumb.path}>
+                    {index < breadcrumbs.length - 1 ? (
+                      <>
+                        <BreadcrumbLink asChild>
+                          <Link to={crumb.path}>{crumb.label}</Link>
+                        </BreadcrumbLink>
+                        <BreadcrumbSeparator />
+                      </>
+                    ) : (
+                      <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                    )}
+                  </BreadcrumbItem>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
 
           {/* Page Content */}
           <main className="flex-1 overflow-auto">
