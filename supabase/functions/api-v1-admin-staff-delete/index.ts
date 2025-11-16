@@ -59,12 +59,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in staff deletion:', error);
 
-    const status = error.message === 'Admin access required' ? 403 :
-                   error.message?.includes('authorization') ? 401 : 500;
+    const errorMessage = error instanceof Error ? error.message : 'Failed to delete staff member';
+    const status = errorMessage === 'Admin access required' ? 403 :
+                   errorMessage?.includes('authorization') ? 401 : 500;
 
     return new Response(
       JSON.stringify({
-        error: error.message || 'Failed to delete staff member',
+        error: errorMessage,
         details: status === 500 ? 'Internal server error' : undefined,
       }),
       { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
