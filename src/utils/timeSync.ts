@@ -81,19 +81,16 @@ export const startJob = async (
   duration: string
 ): Promise<ActiveJob | null> => {
   try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .single();
-
-    if (!profile) {
-      throw new Error('Profile not found');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
     }
 
     const { data, error } = await supabase
       .from('active_jobs')
       .insert({
-        staff_id: profile.id,
+        staff_id: user.id,
         booking_id: bookingId,
         client_name: clientName,
         service: service,
@@ -197,17 +194,14 @@ export const completeJob = async (jobId: string): Promise<boolean> => {
  */
 export const getActiveJob = async (): Promise<ActiveJob | null> => {
   try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .single();
-
-    if (!profile) return null;
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return null;
 
     const { data, error } = await supabase
       .from('active_jobs')
       .select('*')
-      .eq('staff_id', profile.id)
+      .eq('staff_id', user.id)
       .in('status', ['active', 'paused'])
       .order('created_at', { ascending: false })
       .limit(1)
@@ -226,13 +220,10 @@ export const getActiveJob = async (): Promise<ActiveJob | null> => {
  */
 export const startBreak = async (durationMinutes: number): Promise<BreakSession | null> => {
   try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .single();
-
-    if (!profile) {
-      throw new Error('Profile not found');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
     }
 
     const now = new Date();
@@ -241,7 +232,7 @@ export const startBreak = async (durationMinutes: number): Promise<BreakSession 
     const { data, error} = await supabase
       .from('break_sessions')
       .insert({
-        staff_id: profile.id,
+        staff_id: user.id,
         break_duration_minutes: durationMinutes,
         started_at: now.toISOString(),
         ends_at: endsAt.toISOString(),
@@ -283,17 +274,14 @@ export const endBreak = async (breakId: string): Promise<boolean> => {
  */
 export const getActiveBreak = async (): Promise<BreakSession | null> => {
   try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .single();
-
-    if (!profile) return null;
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return null;
 
     const { data, error } = await supabase
       .from('break_sessions')
       .select('*')
-      .eq('staff_id', profile.id)
+      .eq('staff_id', user.id)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(1)
@@ -312,12 +300,9 @@ export const getActiveBreak = async (): Promise<BreakSession | null> => {
  */
 export const getTodayBreaks = async (): Promise<BreakSession[]> => {
   try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .single();
-
-    if (!profile) return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return [];
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -325,7 +310,7 @@ export const getTodayBreaks = async (): Promise<BreakSession[]> => {
     const { data, error } = await supabase
       .from('break_sessions')
       .select('*')
-      .eq('staff_id', profile.id)
+      .eq('staff_id', user.id)
       .gte('started_at', todayStart.toISOString())
       .order('started_at', { ascending: false });
 
