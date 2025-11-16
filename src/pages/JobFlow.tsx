@@ -38,22 +38,6 @@ const JobFlow = () => {
   const [loading, setLoading] = useState(true);
   const [handoffDialogOpen, setHandoffDialogOpen] = useState(false);
 
-  // Redirect unauthenticated users to /auth
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session?.user) {
-        navigate('/auth');
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) {
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
 
   // Check for existing active job on mount
   useEffect(() => {

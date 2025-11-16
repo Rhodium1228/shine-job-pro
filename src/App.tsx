@@ -14,6 +14,7 @@ import EarningsPage from "./pages/EarningsPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import ACSUWallet from "./pages/ACSUWallet";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,13 +27,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/job-flow" element={<JobFlow />} />
-          <Route path="/break-timer" element={<BreakTimer />} />
-          <Route path="/calendar" element={<CalendarView />} />
-          <Route path="/earnings" element={<EarningsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/acsu-wallet" element={<ACSUWallet />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/job-flow" element={<ProtectedRoute><JobFlow /></ProtectedRoute>} />
+          <Route path="/break-timer" element={<ProtectedRoute><BreakTimer /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
+          <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
