@@ -5,6 +5,7 @@ import { GradientButton } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Break {
   id: string;
@@ -57,13 +58,28 @@ const BreakTimer = () => {
     }
   };
 
-  const handleStartBreak = () => {
+  const updateAvailabilityStatus = async (status: 'available' | 'busy' | 'on_break' | 'offline') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ availability_status: status })
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Error updating availability status:', error);
+    }
+  };
+
+  const handleStartBreak = async () => {
     setIsOnBreak(true);
     setCurrentBreakTime(0);
+    await updateAvailabilityStatus('on_break');
     toast.success("Break started - enjoy your rest! ☕");
   };
 
-  const handleEndBreak = () => {
+  const handleEndBreak = async () => {
     const newBreak: Break = {
       id: Date.now().toString(),
       startTime: new Date(Date.now() - currentBreakTime * 1000),
@@ -75,13 +91,14 @@ const BreakTimer = () => {
     setTotalBreakTime((prev) => prev + currentBreakTime);
     setIsOnBreak(false);
     setCurrentBreakTime(0);
+    await updateAvailabilityStatus('available');
     toast.success("Break ended - welcome back!");
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (isOnBreak) {
       if (confirm("You're currently on a break. End break and return to dashboard?")) {
-        handleEndBreak();
+        await handleEndBreak();
         navigate("/dashboard");
       }
     } else {
