@@ -88,7 +88,7 @@ export const CustomerHistoryDialog = ({
       // Calculate stats
       const totalBookings = data.length;
       const totalSpent = data.reduce((sum, booking) => {
-        return sum + parseFloat(booking.price.replace(/[^0-9.-]+/g, ""));
+        return sum + Number(booking.price);
       }, 0);
 
       setStats({

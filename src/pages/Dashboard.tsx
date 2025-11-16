@@ -26,7 +26,7 @@ interface Booking {
   time: string;
   duration: string;
   status: "pending" | "accepted";
-  price: string;
+  price: number;
 }
 const Dashboard = () => {
   const navigate = useNavigate();

@@ -11,7 +11,7 @@ export interface ActiveJob {
   booking_id: string;
   client_name: string;
   service: string;
-  price: string;
+  price: number;
   duration: string;
   started_at: string;
   paused_at: string | null;
@@ -79,7 +79,7 @@ export const startJob = async (
   bookingId: string,
   clientName: string,
   service: string,
-  price: string,
+  price: number,
   duration: string,
   branchId?: string | null
 ): Promise<ActiveJob | null> => {
@@ -92,7 +92,7 @@ export const startJob = async (
 
     const { data, error } = await supabase
       .from('active_jobs')
-      .insert({
+      .insert([{
         staff_id: user.id,
         booking_id: bookingId,
         client_name: clientName,
@@ -101,7 +101,7 @@ export const startJob = async (
         duration: duration,
         status: 'active',
         branch_id: branchId || null,
-      })
+      }])
       .select()
       .single();
 

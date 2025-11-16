@@ -134,7 +134,7 @@ export default function ReportsAnalytics() {
         );
         
         const revenue = dayBookings.reduce((sum, b) => 
-          sum + parseFloat(b.price.replace(/[^0-9.-]+/g, '')), 0
+          sum + Number(b.price), 0
         );
 
         return {
@@ -148,7 +148,7 @@ export default function ReportsAnalytics() {
 
       // Service revenue breakdown
       const serviceRevenue = bookings.reduce((acc: any, booking) => {
-        const price = parseFloat(booking.price.replace(/[^0-9.-]+/g, ''));
+        const price = Number(booking.price);
         if (!acc[booking.service]) {
           acc[booking.service] = { name: booking.service, revenue: 0, count: 0 };
         }
@@ -161,7 +161,7 @@ export default function ReportsAnalytics() {
         dailyRevenue,
         serviceBreakdown: Object.values(serviceRevenue),
         totalRevenue: bookings.reduce((sum, b) => 
-          sum + parseFloat(b.price.replace(/[^0-9.-]+/g, '')), 0
+          sum + Number(b.price), 0
         ),
       };
     },

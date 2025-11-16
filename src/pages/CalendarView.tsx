@@ -216,7 +216,7 @@ const CalendarView = () => {
       id: booking.id,
       client: booking.clientName,
       service: booking.service,
-      price: booking.price,
+      price: String(booking.price),
       duration: booking.duration,
     });
     navigate(`/job-flow?${params.toString()}`);

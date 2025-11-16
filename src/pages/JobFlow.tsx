@@ -149,8 +149,8 @@ const JobFlow = () => {
         bookingData.id,
         bookingData.clientName,
         bookingData.service,
+        parseFloat(bookingData.price) || 0,
         bookingData.duration,
-        bookingData.price,
         selectedBranch?.id
       );
       

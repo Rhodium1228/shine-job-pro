@@ -13,7 +13,7 @@ interface BookingCardProps {
     time: string;
     duration: string;
     status: "pending" | "accepted" | "declined";
-    price: string;
+    price: number;
   };
   onAccept: (id: string) => void;
   onDecline: (id: string) => void;
@@ -39,7 +39,7 @@ const BookingCard = ({ booking, onAccept, onDecline, disableStart = false }: Boo
       id: booking.id,
       client: booking.clientName,
       service: booking.service,
-      price: booking.price,
+      price: String(booking.price),
       duration: booking.duration,
     });
     navigate(`/job-flow?${params.toString()}`);
@@ -86,7 +86,7 @@ const BookingCard = ({ booking, onAccept, onDecline, disableStart = false }: Boo
         </div>
         <div className="flex items-center gap-2 text-sm">
           <DollarSign className="w-4 h-4 text-success" />
-          <span className="text-foreground font-semibold">{booking.price}</span>
+          <span className="text-foreground font-semibold">${typeof booking.price === 'number' ? booking.price.toFixed(2) : booking.price}</span>
         </div>
       </div>
 
