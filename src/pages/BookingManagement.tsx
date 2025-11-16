@@ -4,7 +4,6 @@ import { ArrowLeft, Plus, Pencil, Trash2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserRole } from "@/hooks/useUserRole";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { BookingManagementDialog } from "@/components/BookingManagementDialog";
@@ -18,36 +17,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface Booking {
-  id: string;
-  staff_id: string;
-  client_name: string;
-  service: string;
-  booking_time: string;
-  duration: string;
-  price: number;
-  status: string;
-  client_phone?: string | null;
-  client_email?: string | null;
-  notes?: string | null;
-  branch_id?: string | null;
-  profiles: {
-    full_name: string | null;
-    email: string | null;
-  } | null;
-}
+import { useBookings } from "@/hooks/useBookings";
 
 const BookingManagement = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
+
+  const { bookings, isLoading: loading, deleteBooking, isDeleting, refetch } = useBookings({
+    enabled: isAdmin,
+  });
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -60,41 +43,7 @@ const BookingManagement = () => {
     }
   }, [isAdmin, roleLoading, navigate, toast]);
 
-  const fetchBookings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          *,
-          profiles!bookings_staff_id_fkey (
-            full_name,
-            email
-          )
-        `)
-        .order("booking_time", { ascending: true });
-
-      if (error) throw error;
-
-      setBookings(data || []);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load bookings",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchBookings();
-    }
-  }, [isAdmin]);
-
-  const handleEdit = (booking: Booking) => {
+  const handleEdit = (booking: any) => {
     setSelectedBooking(booking);
     setDialogOpen(true);
   };
@@ -109,34 +58,11 @@ const BookingManagement = () => {
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (!bookingToDelete) return;
-
-    try {
-      const { error } = await supabase
-        .from("bookings")
-        .delete()
-        .eq("id", bookingToDelete);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Booking deleted successfully",
-      });
-
-      fetchBookings();
-    } catch (error) {
-      console.error("Error deleting booking:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete booking",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteDialogOpen(false);
-      setBookingToDelete(null);
-    }
+    deleteBooking(bookingToDelete);
+    setDeleteDialogOpen(false);
+    setBookingToDelete(null);
   };
 
   if (roleLoading || !isAdmin) {
@@ -256,7 +182,7 @@ const BookingManagement = () => {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         booking={selectedBooking}
-        onSuccess={fetchBookings}
+        onSuccess={refetch}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

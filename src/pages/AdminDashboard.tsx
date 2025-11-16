@@ -35,6 +35,7 @@ import {
   Cell
 } from "recharts";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface KPIData {
   totalBookings: number;
@@ -78,167 +79,118 @@ const AdminDashboard = () => {
     activeStaff: 0,
     totalBranches: 0
   });
-  const [bookingTrends, setBookingTrends] = useState<BookingTrend[]>([]);
   const [branchPerformance, setBranchPerformance] = useState<BranchPerformance[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d">("7d");
 
+  // Calculate date range
+  const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : 90;
+  const dateFrom = subDays(new Date(), days);
+  const dateTo = new Date();
+
+  const { data: analyticsData, isLoading: loading } = useAnalytics({
+    dateFrom,
+    dateTo,
+  });
+
   useEffect(() => {
-    fetchDashboardData();
-  }, [dateRange]);
+    fetchAdditionalKPIs();
+    fetchBranchPerformance();
+    fetchRecentActivity();
+  }, [dateRange, analyticsData]);
 
-  const fetchDashboardData = async () => {
+  useEffect(() => {
+    if (analyticsData) {
+      fetchAdditionalKPIs();
+    }
+  }, [analyticsData]);
+
+  const fetchAdditionalKPIs = async () => {
     try {
-      setLoading(true);
-      
-      // Calculate date range
-      const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : 90;
-      const startDate = startOfDay(subDays(new Date(), days));
-      const endDate = endOfDay(new Date());
+      const startDate = startOfDay(dateFrom);
+      const endDate = endOfDay(dateTo);
 
-      // Fetch KPIs
-      await Promise.all([
-        fetchKPIs(startDate, endDate),
-        fetchBookingTrends(startDate, endDate),
-        fetchBranchPerformance(startDate, endDate),
-        fetchRecentActivity()
-      ]);
+      // Fetch cancellations
+      const { count: cancellations } = await supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "cancelled")
+        .gte("booking_time", startDate.toISOString())
+        .lte("booking_time", endDate.toISOString());
 
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data",
-        variant: "destructive"
+      // Fetch average rating
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("rating");
+
+      const avgRating = profilesData?.reduce((sum, p) => sum + (p.rating || 0), 0) / (profilesData?.length || 1);
+
+      // Fetch active staff
+      const { count: activeStaff } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("availability_status", "available");
+
+      // Fetch total branches
+      const { count: totalBranches } = await supabase
+        .from("branches")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+
+      setKpis({
+        totalBookings: analyticsData?.totalBookings || 0,
+        totalEarnings: analyticsData?.completedRevenue || 0,
+        cancellations: cancellations || 0,
+        averageRating: avgRating || 0,
+        activeStaff: activeStaff || 0,
+        totalBranches: totalBranches || 0,
       });
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching KPIs:", error);
     }
   };
 
-  const fetchKPIs = async (startDate: Date, endDate: Date) => {
-    // Fetch total bookings
-    const { count: totalBookings } = await supabase
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .gte("booking_time", startDate.toISOString())
-      .lte("booking_time", endDate.toISOString());
+  const fetchBranchPerformance = async () => {
+    try {
+      const startDate = startOfDay(dateFrom);
+      const endDate = endOfDay(dateTo);
 
-    // Fetch total earnings
-    const { data: bookingsData } = await supabase
-      .from("bookings")
-      .select("price")
-      .gte("booking_time", startDate.toISOString())
-      .lte("booking_time", endDate.toISOString())
-      .eq("status", "completed");
+      const { data: branchesData } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("is_active", true);
 
-    const totalEarnings = bookingsData?.reduce((sum, booking) => {
-      return sum + Number(booking.price);
-    }, 0) || 0;
+      if (!branchesData) return;
 
-    // Fetch cancellations
-    const { count: cancellations } = await supabase
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "cancelled")
-      .gte("booking_time", startDate.toISOString())
-      .lte("booking_time", endDate.toISOString());
+      const performance = await Promise.all(
+        branchesData.map(async (branch) => {
+          const { data: bookingsData } = await supabase
+            .from("bookings")
+            .select("price, status")
+            .eq("branch_id", branch.id)
+            .gte("booking_time", startDate.toISOString())
+            .lte("booking_time", endDate.toISOString());
 
-    // Fetch average rating
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("rating");
+          const bookings = bookingsData?.length || 0;
+          const revenue = bookingsData?.reduce((sum, b) => {
+            if (b.status === "completed") {
+              return sum + Number(b.price);
+            }
+            return sum;
+          }, 0) || 0;
 
-    const avgRating = profilesData?.reduce((sum, p) => sum + (p.rating || 0), 0) / (profilesData?.length || 1);
+          return {
+            name: branch.name,
+            bookings,
+            revenue: Math.round(revenue),
+          };
+        })
+      );
 
-    // Fetch active staff
-    const { count: activeStaff } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("availability_status", "available");
-
-    // Fetch total branches
-    const { count: totalBranches } = await supabase
-      .from("branches")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true);
-
-    setKpis({
-      totalBookings: totalBookings || 0,
-      totalEarnings: totalEarnings,
-      cancellations: cancellations || 0,
-      averageRating: avgRating || 0,
-      activeStaff: activeStaff || 0,
-      totalBranches: totalBranches || 0
-    });
-  };
-
-  const fetchBookingTrends = async (startDate: Date, endDate: Date) => {
-    const { data: bookingsData } = await supabase
-      .from("bookings")
-      .select("booking_time, price, status")
-      .gte("booking_time", startDate.toISOString())
-      .lte("booking_time", endDate.toISOString())
-      .order("booking_time");
-
-    // Group by date
-    const trendMap = new Map<string, { bookings: number; revenue: number }>();
-    
-    bookingsData?.forEach(booking => {
-      const date = format(new Date(booking.booking_time), "MMM dd");
-      const existing = trendMap.get(date) || { bookings: 0, revenue: 0 };
-      const price = Number(booking.price);
-      
-      trendMap.set(date, {
-        bookings: existing.bookings + 1,
-        revenue: existing.revenue + (booking.status === "completed" ? price : 0)
-      });
-    });
-
-    const trends = Array.from(trendMap.entries()).map(([date, data]) => ({
-      date,
-      bookings: data.bookings,
-      revenue: Math.round(data.revenue)
-    }));
-
-    setBookingTrends(trends);
-  };
-
-  const fetchBranchPerformance = async (startDate: Date, endDate: Date) => {
-    const { data: branchesData } = await supabase
-      .from("branches")
-      .select("id, name")
-      .eq("is_active", true);
-
-    if (!branchesData) return;
-
-    const performance = await Promise.all(
-      branchesData.map(async (branch) => {
-        const { data: bookingsData } = await supabase
-          .from("bookings")
-          .select("price, status")
-          .eq("branch_id", branch.id)
-          .gte("booking_time", startDate.toISOString())
-          .lte("booking_time", endDate.toISOString());
-
-        const bookings = bookingsData?.length || 0;
-        const revenue = bookingsData?.reduce((sum, b) => {
-          if (b.status === "completed") {
-            return sum + Number(b.price);
-          }
-          return sum;
-        }, 0) || 0;
-
-        return {
-          name: branch.name,
-          bookings,
-          revenue: Math.round(revenue)
-        };
-      })
-    );
-
-    setBranchPerformance(performance.sort((a, b) => b.revenue - a.revenue));
+      setBranchPerformance(performance.sort((a, b) => b.revenue - a.revenue));
+    } catch (error) {
+      console.error("Error fetching branch performance:", error);
+    }
   };
 
   const fetchRecentActivity = async () => {
@@ -351,7 +303,7 @@ const AdminDashboard = () => {
               <div className="h-64 bg-muted animate-pulse rounded" />
             ) : (
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={bookingTrends}>
+                <LineChart data={analyticsData?.dailyRevenue || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis yAxisId="left" />
