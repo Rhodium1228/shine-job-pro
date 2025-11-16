@@ -23,6 +23,8 @@ import EnhancedBookingManagement from "./pages/EnhancedBookingManagement";
 import ACSULoyaltyConfig from "./pages/ACSULoyaltyConfig";
 import ReportsAnalytics from "./pages/ReportsAnalytics";
 import CustomerFeedback from "./pages/CustomerFeedback";
+import StaffInvite from "./pages/StaffInvite";
+import StaffOnboarding from "./pages/StaffOnboarding";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
@@ -55,6 +57,8 @@ const App = () => (
             <Route path="/loyalty-config" element={<ProtectedRoute><ProtectedAdminRoute><ACSULoyaltyConfig /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/reports-analytics" element={<ProtectedRoute><ProtectedAdminRoute><ReportsAnalytics /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/customer-feedback" element={<ProtectedRoute><ProtectedAdminRoute><CustomerFeedback /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/staff-invite" element={<ProtectedRoute><ProtectedAdminRoute><StaffInvite /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><StaffOnboarding /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
