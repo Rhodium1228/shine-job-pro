@@ -3,6 +3,7 @@ import { GradientButton } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface BookingCardProps {
   booking: {
@@ -19,6 +20,8 @@ interface BookingCardProps {
 }
 
 const BookingCard = ({ booking, onAccept, onDecline }: BookingCardProps) => {
+  const navigate = useNavigate();
+
   const handleAccept = () => {
     onAccept(booking.id);
     toast.success("Booking accepted!");
@@ -27,6 +30,18 @@ const BookingCard = ({ booking, onAccept, onDecline }: BookingCardProps) => {
   const handleDecline = () => {
     onDecline(booking.id);
     toast.error("Booking declined");
+  };
+
+  const handleStartJob = () => {
+    // Navigate to job flow with booking data
+    const params = new URLSearchParams({
+      id: booking.id,
+      client: booking.clientName,
+      service: booking.service,
+      price: booking.price,
+      duration: booking.duration,
+    });
+    navigate(`/job-flow?${params.toString()}`);
   };
 
   const isPending = booking.status === "pending";
@@ -97,7 +112,11 @@ const BookingCard = ({ booking, onAccept, onDecline }: BookingCardProps) => {
       )}
 
       {isAccepted && (
-        <GradientButton variant="primary" className="w-full h-11">
+        <GradientButton 
+          onClick={handleStartJob}
+          variant="primary" 
+          className="w-full h-11"
+        >
           Start Job
         </GradientButton>
       )}
