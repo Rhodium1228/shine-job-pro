@@ -11,6 +11,8 @@ import JobFlow from "./pages/JobFlow";
 import BreakTimer from "./pages/BreakTimer";
 import CalendarView from "./pages/CalendarView";
 import EarningsPage from "./pages/EarningsPage";
+import AuthPage from "./pages/AuthPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -22,11 +24,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/job-flow" element={<JobFlow />} />
           <Route path="/break-timer" element={<BreakTimer />} />
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/earnings" element={<EarningsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
