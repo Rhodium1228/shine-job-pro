@@ -1,4 +1,4 @@
-import { Home, Calendar, MessageSquare, User } from "lucide-react";
+import { Home, Calendar, DollarSign, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -10,7 +10,7 @@ const BottomNav = () => {
   const getActiveTab = () => {
     if (location.pathname === "/dashboard") return "home";
     if (location.pathname === "/calendar") return "schedule";
-    if (location.pathname === "/chat") return "chat";
+    if (location.pathname === "/earnings") return "earnings";
     if (location.pathname === "/profile") return "profile";
     return "home";
   };
@@ -25,7 +25,7 @@ const BottomNav = () => {
   const navItems = [
     { id: "home", icon: Home, label: "Home", path: "/dashboard" },
     { id: "schedule", icon: Calendar, label: "Schedule", path: "/calendar" },
-    { id: "chat", icon: MessageSquare, label: "Chat", path: "/chat" },
+    { id: "earnings", icon: DollarSign, label: "Earnings", path: "/earnings" },
     { id: "profile", icon: User, label: "Profile", path: "/profile" },
   ];
 
