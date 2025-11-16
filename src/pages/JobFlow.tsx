@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { playStartSound, playPauseSound, playResumeSound, playCompleteSound } from "@/utils/soundEffects";
+import { supabase } from "@/integrations/supabase/client";
 import {
   startJob,
   pauseJob,
@@ -46,6 +47,49 @@ const JobFlow = () => {
       setLoading(false);
     };
     checkActiveJob();
+  }, []);
+
+  // Subscribe to realtime changes on active_jobs
+  useEffect(() => {
+    const channel = supabase
+      .channel('active-jobs-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'active_jobs',
+        },
+        (payload) => {
+          console.log('Realtime job update:', payload);
+          
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const newJob = payload.new as ActiveJob;
+            setActiveJobData(newJob);
+            setJobStatus(newJob.status === 'paused' ? 'paused' : 'active');
+            toast.info(`Job started: ${newJob.client_name}`);
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedJob = payload.new as ActiveJob;
+            setActiveJobData(updatedJob);
+            setJobStatus(updatedJob.status === 'completed' ? 'completed' : 
+                        updatedJob.status === 'paused' ? 'paused' : 'active');
+            
+            if (updatedJob.status === 'paused') {
+              toast.info(`Job paused: ${updatedJob.client_name}`);
+            } else if (updatedJob.status === 'completed') {
+              toast.success(`Job completed: ${updatedJob.client_name}`);
+            }
+          } else if (payload.eventType === 'DELETE') {
+            setActiveJobData(null);
+            setJobStatus('ready');
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Update elapsed time every second using server timestamp
