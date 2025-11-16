@@ -128,6 +128,12 @@ export const HandoffDialog = ({ open, onOpenChange, jobId, clientName, service }
   const filteredAndSortedStaff = useMemo(() => {
     let filtered = staffMembers;
 
+    // Filter out offline and on_break staff
+    filtered = filtered.filter(staff => 
+      staff.availability_status !== 'offline' && 
+      staff.availability_status !== 'on_break'
+    );
+
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -168,6 +174,20 @@ export const HandoffDialog = ({ open, onOpenChange, jobId, clientName, service }
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error('You must be logged in to transfer jobs');
+        return;
+      }
+
+      // Check sender's status - prevent handoff if offline or on break
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('availability_status')
+        .eq('id', user.id)
+        .single();
+
+      if (senderProfile?.availability_status === 'offline' || 
+          senderProfile?.availability_status === 'on_break') {
+        toast.error('Cannot create handoffs while offline or on break');
+        setLoading(false);
         return;
       }
 
