@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { playSuccessSound, playClickSound } from "@/utils/soundEffects";
 
 interface SlideToStartProps {
   onComplete: () => void;
@@ -55,6 +56,7 @@ const SlideToStart = ({ onComplete, disabled = false }: SlideToStartProps) => {
   const handleStart = (clientX: number) => {
     if (disabled) return;
     setIsDragging(true);
+    playClickSound(); // Subtle feedback when starting to drag
   };
 
   const handleMove = (clientX: number) => {
@@ -71,6 +73,7 @@ const SlideToStart = ({ onComplete, disabled = false }: SlideToStartProps) => {
     if (newPosition >= maxPosition.current * 0.9) {
       setIsDragging(false);
       setPosition(maxPosition.current);
+      playSuccessSound(); // Play success sound when slider completes
       setTimeout(() => {
         onComplete();
         setPosition(0); // Reset for next time
