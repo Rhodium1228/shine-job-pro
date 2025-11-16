@@ -29,7 +29,7 @@ type AvailabilityStatus = 'available' | 'busy' | 'on_break' | 'offline';
 const statusConfig = {
   available: { label: 'Available', icon: Check, color: 'text-success bg-success/20 hover:bg-success/30' },
   busy: { label: 'Busy', icon: Clock, color: 'text-warning bg-warning/20 hover:bg-warning/30' },
-  on_break: { label: 'On Break', icon: Coffee, color: 'text-info bg-info/20 hover:bg-info/30' },
+  on_break: { label: 'On Break', icon: Coffee, color: 'text-secondary bg-secondary/20 hover:bg-secondary/30' },
   offline: { label: 'Offline', icon: WifiOff, color: 'text-muted-foreground bg-muted hover:bg-muted/80' },
 };
 
