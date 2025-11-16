@@ -28,6 +28,7 @@ import StaffOnboarding from "./pages/StaffOnboarding";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import { AdminLayout } from "./components/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -48,16 +49,16 @@ const App = () => (
             <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/staff-management" element={<ProtectedRoute><ProtectedAdminRoute><StaffManagement /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/booking-management" element={<ProtectedRoute><ProtectedAdminRoute><EnhancedBookingManagement /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/branch-management" element={<ProtectedRoute><ProtectedAdminRoute><BranchManagement /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><AdminDashboard /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/staff-management" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><StaffManagement /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/booking-management" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><EnhancedBookingManagement /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/branch-management" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><BranchManagement /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
-            <Route path="/availability-report" element={<ProtectedRoute><ProtectedAdminRoute><AvailabilityReport /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/loyalty-config" element={<ProtectedRoute><ProtectedAdminRoute><ACSULoyaltyConfig /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/reports-analytics" element={<ProtectedRoute><ProtectedAdminRoute><ReportsAnalytics /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/customer-feedback" element={<ProtectedRoute><ProtectedAdminRoute><CustomerFeedback /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/staff-invite" element={<ProtectedRoute><ProtectedAdminRoute><StaffInvite /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/availability-report" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><AvailabilityReport /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/loyalty-config" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><ACSULoyaltyConfig /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/reports-analytics" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><ReportsAnalytics /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/customer-feedback" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><CustomerFeedback /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/staff-invite" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><StaffInvite /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/onboarding" element={<ProtectedRoute><StaffOnboarding /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
