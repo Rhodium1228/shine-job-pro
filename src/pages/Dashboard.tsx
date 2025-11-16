@@ -5,6 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
 import { ActiveJobsIndicator } from "@/components/ActiveJobsIndicator";
 import { HandoffNotifications } from "@/components/HandoffNotifications";
+import { AvailabilityStatusToggle } from "@/components/AvailabilityStatusToggle";
 
 // Mock data
 const mockBookings = [
@@ -81,9 +82,12 @@ const Dashboard = () => {
               <p className="text-white/80 text-sm">Jessica Martinez</p>
             </div>
           </div>
-          <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <TrendingUp className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <AvailabilityStatusToggle />
+            <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <TrendingUp className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
