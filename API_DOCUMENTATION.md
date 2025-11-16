@@ -278,10 +278,162 @@ function MyComponent() {
 
 ---
 
+## Phase 3: Admin Staff Management Endpoints
+
+These endpoints are **admin-only** and provide staff creation, updates, and deletion capabilities.
+
+### POST /api-v1-admin-staff-create
+
+Create a new staff member with full account setup.
+
+**Authorization:** Admin role required
+
+**Request:**
+```json
+{
+  "email": "staff@example.com",
+  "fullName": "Jane Smith",
+  "phone": "+1234567890",
+  "branchId": "branch-uuid",
+  "assignedRole": "staff",
+  "hourlyRate": 25.50,
+  "specialties": ["Haircut", "Coloring"]
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "staff": {
+    "id": "uuid",
+    "email": "staff@example.com",
+    "full_name": "Jane Smith",
+    "phone": "+1234567890",
+    "hourly_rate": 25.50,
+    "specialties": ["Haircut", "Coloring"],
+    "user_roles": [{ "role": "staff" }],
+    "staff_branches": [{ "branch_id": "branch-uuid", "is_default": true }]
+  },
+  "message": "Staff member created successfully"
+}
+```
+
+**Errors:**
+- `400`: Missing required fields
+- `401`: Invalid or expired token
+- `403`: Admin access required
+- `500`: Server error during creation
+
+---
+
+### PATCH /api-v1-admin-staff-update
+
+Update an existing staff member's details.
+
+**Authorization:** Admin role required
+
+**Request:**
+```json
+{
+  "staffId": "uuid",
+  "fullName": "Jane Doe",
+  "phone": "+1234567890",
+  "hourlyRate": 30.00,
+  "specialties": ["Haircut", "Coloring", "Styling"],
+  "defaultBranchId": "branch-uuid",
+  "isSuspended": false,
+  "role": "admin"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "staff": {
+    "id": "uuid",
+    "full_name": "Jane Doe",
+    "phone": "+1234567890",
+    "hourly_rate": 30.00,
+    "is_suspended": false,
+    "user_roles": [{ "role": "admin" }]
+  },
+  "message": "Staff member updated successfully"
+}
+```
+
+**Errors:**
+- `400`: Missing staffId
+- `401`: Invalid or expired token
+- `403`: Admin access required
+- `500`: Server error during update
+
+---
+
+### DELETE /api-v1-admin-staff-delete
+
+Delete a staff member account.
+
+**Authorization:** Admin role required
+
+**Query Parameters:**
+- `staffId` (required): UUID of the staff member to delete
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Staff member deleted successfully"
+}
+```
+
+**Errors:**
+- `400`: Missing staffId or attempting to delete own account
+- `401`: Invalid or expired token
+- `403`: Admin access required
+- `500`: Server error during deletion
+
+---
+
+### POST /send-staff-invitation
+
+Send an email invitation to a new staff member.
+
+**Authorization:** Admin role required
+
+**Request:**
+```json
+{
+  "email": "newstaff@example.com",
+  "branchId": "branch-uuid",
+  "assignedRole": "staff",
+  "branchName": "Downtown Branch"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Invitation sent successfully"
+}
+```
+
+**Errors:**
+- `400`: Missing required fields
+- `401`: Invalid or expired token
+- `403`: Admin access required
+- `500`: Email sending failed
+
+---
+
 ### Security Considerations
 
 1. **JWT Verification**: All protected endpoints verify JWT tokens using Supabase's service role key
 2. **Role-Based Access**: Admin-only endpoints check the `user_roles` table
+3. **Admin Access Control**: Staff creation, update, and deletion operations are restricted to admin users only
+4. **Self-Protection**: Admins cannot delete their own accounts to prevent accidental lockout
 3. **Branch Scoping**: Staff members can only access data from their assigned branches
 4. **Token Storage**: Tokens stored in localStorage (consider HTTP-only cookies for production)
 5. **Token Refresh**: Automatic token refresh prevents session interruption

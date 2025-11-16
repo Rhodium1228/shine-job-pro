@@ -2,37 +2,40 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyAuth, requireAdmin, corsHeaders } from '../_shared/auth-middleware.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Verify authentication and require admin role
+    const authHeader = req.headers.get('Authorization');
+    const context = await verifyAuth(authHeader);
+    requireAdmin(context); // Only admins can invite staff
+    
+    console.log(`Admin ${context.email} is sending staff invitation`);
+
     const { email, branchId, assignedRole, branchName } = await req.json();
     
+    // Validate required fields
+    if (!email || !branchId || !assignedRole || !branchName) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: email, branchId, assignedRole, branchName' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Sending staff invitation to:', email);
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get current user (admin who's sending invite)
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
 
     // Generate invitation token
     const invitationToken = crypto.randomUUID();
@@ -44,7 +47,7 @@ serve(async (req) => {
       .from('staff_invitations')
       .insert({
         email,
-        invited_by: user.id,
+        invited_by: context.userId,
         branch_id: branchId,
         assigned_role: assignedRole,
         invitation_token: invitationToken,
@@ -62,7 +65,7 @@ serve(async (req) => {
     const { data: inviter } = await supabase
       .from('profiles')
       .select('full_name')
-      .eq('id', user.id)
+      .eq('id', context.userId)
       .single();
 
     const inviterName = inviter?.full_name || 'Administrator';
@@ -157,14 +160,18 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in send-staff-invitation:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error sending invitation:', error);
+    
+    // Handle specific error cases
+    const status = error.message === 'Admin access required' ? 403 : 
+                   error.message?.includes('authorization') ? 401 : 500;
+    
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ 
+        error: error.message || 'Failed to send invitation',
+        details: status === 500 ? 'Internal server error' : undefined
+      }),
+      { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

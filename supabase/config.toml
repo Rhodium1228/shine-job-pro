@@ -38,3 +38,15 @@ verify_jwt = false
 
 [functions.api-v1-staff-earnings]
 verify_jwt = false
+
+[functions.api-v1-admin-staff-create]
+verify_jwt = false
+
+[functions.api-v1-admin-staff-update]
+verify_jwt = false
+
+[functions.api-v1-admin-staff-delete]
+verify_jwt = false
+
+[functions.send-staff-invitation]
+verify_jwt = false
