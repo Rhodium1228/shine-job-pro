@@ -5,3 +5,15 @@ verify_jwt = false
 
 [functions.send-staff-invitation]
 verify_jwt = true
+
+[functions.api-v1-auth-login]
+verify_jwt = false
+
+[functions.api-v1-auth-refresh]
+verify_jwt = false
+
+[functions.api-v1-auth-logout]
+verify_jwt = false
+
+[functions.api-v1-auth-session]
+verify_jwt = false
