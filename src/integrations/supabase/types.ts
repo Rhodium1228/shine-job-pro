@@ -1094,6 +1094,63 @@ export type Database = {
           },
         ]
       }
+      staff_services: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          base_price: number
+          created_at: string
+          custom_price: number | null
+          id: string
+          is_active: boolean
+          requires_admin_approval: boolean
+          service_name: string
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          base_price?: number
+          created_at?: string
+          custom_price?: number | null
+          id?: string
+          is_active?: boolean
+          requires_admin_approval?: boolean
+          service_name: string
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          base_price?: number
+          created_at?: string
+          custom_price?: number | null
+          id?: string
+          is_active?: boolean
+          requires_admin_approval?: boolean
+          service_name?: string
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_services_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_services_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       status_history: {
         Row: {
           created_at: string
