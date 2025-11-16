@@ -36,7 +36,7 @@ interface FavoriteStaff {
 const availabilityConfig = {
   available: { label: 'Available', icon: Check, color: 'text-success bg-success/20' },
   busy: { label: 'Busy', icon: Clock, color: 'text-warning bg-warning/20' },
-  on_break: { label: 'On Break', icon: Coffee, color: 'text-info bg-info/20' },
+  on_break: { label: 'On Break', icon: Coffee, color: 'text-secondary bg-secondary/20' },
   offline: { label: 'Offline', icon: WifiOff, color: 'text-muted-foreground bg-muted' },
 };
 

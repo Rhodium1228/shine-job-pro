@@ -125,7 +125,7 @@ const Dashboard = () => {
       }
     };
     fetchBookings();
-  }, [toast]);
+  }, [toast, selectedBranch]);
   const handleAccept = async (id: string) => {
     try {
       const {
@@ -177,7 +177,6 @@ const Dashboard = () => {
       title: "Branch Changed",
       description: `Switched to ${branch.name}`
     });
-    window.location.reload();
   };
   const stats = [{
     label: "Today's Jobs",
@@ -228,7 +227,7 @@ const Dashboard = () => {
             <div className={cn(
               "mb-4 p-4 rounded-xl border-2 backdrop-blur-sm animate-fade-in",
               availabilityStatus === 'on_break' && "bg-warning/20 border-warning/40",
-              availabilityStatus === 'busy' && "bg-info/20 border-info/40",
+              availabilityStatus === 'busy' && "bg-secondary/20 border-secondary/40",
               availabilityStatus === 'offline' && "bg-muted/20 border-muted/40"
             )}>
               <div className="flex items-center gap-3">
@@ -327,7 +326,7 @@ const Dashboard = () => {
       <div className="p-6">
         {/* Break Button */}
         <div className="mb-6 animate-slide-up">
-          <BreakButton isOnBreak={false} />
+          <BreakButton isOnBreak={availabilityStatus === 'on_break'} />
         </div>
 
         {/* Active Jobs Indicator */}
@@ -338,14 +337,19 @@ const Dashboard = () => {
 
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-foreground">Today's Schedule</h3>
-          <span className="text-sm text-muted-foreground">Monday, Jan 15</span>
+          <span className="text-sm text-muted-foreground">{format(new Date(), 'EEEE, MMM d')}</span>
         </div>
 
         <div className="space-y-4">
           {bookings.map((booking, index) => <div key={booking.id} className="animate-slide-up" style={{
           animationDelay: `${index * 100}ms`
         }}>
-              <BookingCard booking={booking} onAccept={handleAccept} onDecline={handleDecline} />
+              <BookingCard 
+                booking={booking} 
+                onAccept={handleAccept} 
+                onDecline={handleDecline}
+                disableStart={availabilityStatus === 'on_break' || availabilityStatus === 'offline'}
+              />
             </div>)}
         </div>
 
