@@ -14,12 +14,12 @@ import EarningsPage from "./pages/EarningsPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import ACSUWallet from "./pages/ACSUWallet";
-import BookingManagement from "./pages/BookingManagement";
 import BranchManagement from "./pages/BranchManagement";
 import BranchSelector from "./pages/BranchSelector";
 import AvailabilityReport from "./pages/AvailabilityReport";
 import AdminDashboard from "./pages/AdminDashboard";
 import StaffManagement from "./pages/StaffManagement";
+import EnhancedBookingManagement from "./pages/EnhancedBookingManagement";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
@@ -45,7 +45,7 @@ const App = () => (
             <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/staff-management" element={<ProtectedRoute><ProtectedAdminRoute><StaffManagement /></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/booking-management" element={<ProtectedRoute><ProtectedAdminRoute><BookingManagement /></ProtectedAdminRoute></ProtectedRoute>} />
+            <Route path="/booking-management" element={<ProtectedRoute><ProtectedAdminRoute><EnhancedBookingManagement /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/branch-management" element={<ProtectedRoute><ProtectedAdminRoute><BranchManagement /></ProtectedAdminRoute></ProtectedRoute>} />
             <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
             <Route path="/availability-report" element={<ProtectedRoute><ProtectedAdminRoute><AvailabilityReport /></ProtectedAdminRoute></ProtectedRoute>} />
