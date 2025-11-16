@@ -31,6 +31,7 @@ interface Booking {
   client_phone?: string | null;
   client_email?: string | null;
   notes?: string | null;
+  branch_id?: string | null;
   profiles: {
     full_name: string | null;
     email: string | null;

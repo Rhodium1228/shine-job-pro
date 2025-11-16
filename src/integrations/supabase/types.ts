@@ -68,6 +68,7 @@ export type Database = {
       bookings: {
         Row: {
           booking_time: string
+          branch_id: string | null
           client_email: string | null
           client_name: string
           client_phone: string | null
@@ -83,6 +84,7 @@ export type Database = {
         }
         Insert: {
           booking_time: string
+          branch_id?: string | null
           client_email?: string | null
           client_name: string
           client_phone?: string | null
@@ -98,6 +100,7 @@ export type Database = {
         }
         Update: {
           booking_time?: string
+          branch_id?: string | null
           client_email?: string | null
           client_name?: string
           client_phone?: string | null
@@ -113,8 +116,83 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "bookings_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bookings_staff_id_fkey"
             columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      branches: {
+        Row: {
+          acsu_bonus_multiplier: number | null
+          acsu_points_per_dollar: number | null
+          address: string | null
+          color_theme: string | null
+          created_at: string | null
+          email: string | null
+          gps_latitude: number | null
+          gps_longitude: number | null
+          gps_radius_meters: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          manager_id: string | null
+          name: string
+          opening_hours: Json | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          acsu_bonus_multiplier?: number | null
+          acsu_points_per_dollar?: number | null
+          address?: string | null
+          color_theme?: string | null
+          created_at?: string | null
+          email?: string | null
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          gps_radius_meters?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          manager_id?: string | null
+          name: string
+          opening_hours?: Json | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          acsu_bonus_multiplier?: number | null
+          acsu_points_per_dollar?: number | null
+          address?: string | null
+          color_theme?: string | null
+          created_at?: string | null
+          email?: string | null
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          gps_radius_meters?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          manager_id?: string | null
+          name?: string
+          opening_hours?: Json | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_manager_id_fkey"
+            columns: ["manager_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -228,6 +306,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          default_branch_id: string | null
           email: string | null
           full_name: string | null
           hourly_rate: number | null
@@ -245,6 +324,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          default_branch_id?: string | null
           email?: string | null
           full_name?: string | null
           hourly_rate?: number | null
@@ -262,6 +342,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          default_branch_id?: string | null
           email?: string | null
           full_name?: string | null
           hourly_rate?: number | null
@@ -274,7 +355,54 @@ export type Database = {
           updated_at?: string | null
           working_hours?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_default_branch_id_fkey"
+            columns: ["default_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_branches: {
+        Row: {
+          branch_id: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          staff_id: string
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          staff_id: string
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_branches_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_branches_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
