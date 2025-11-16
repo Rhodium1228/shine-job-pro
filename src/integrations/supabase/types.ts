@@ -213,6 +213,48 @@ export type Database = {
           },
         ]
       }
+      break_requests: {
+        Row: {
+          break_duration_minutes: number
+          created_at: string | null
+          id: string
+          reason: string | null
+          requested_at: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          staff_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          break_duration_minutes: number
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          staff_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          break_duration_minutes?: number
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          staff_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       break_sessions: {
         Row: {
           break_duration_minutes: number
@@ -325,6 +367,7 @@ export type Database = {
           full_name: string | null
           hourly_rate: number | null
           id: string
+          is_suspended: boolean | null
           phone: string | null
           rating: number | null
           specialties: string[] | null
@@ -343,6 +386,7 @@ export type Database = {
           full_name?: string | null
           hourly_rate?: number | null
           id: string
+          is_suspended?: boolean | null
           phone?: string | null
           rating?: number | null
           specialties?: string[] | null
@@ -361,6 +405,7 @@ export type Database = {
           full_name?: string | null
           hourly_rate?: number | null
           id?: string
+          is_suspended?: boolean | null
           phone?: string | null
           rating?: number | null
           specialties?: string[] | null

@@ -463,10 +463,10 @@ const AdminDashboard = () => {
             <Button
               variant="outline"
               className="h-24 flex flex-col gap-2"
-              onClick={() => navigate("/availability-report")}
+              onClick={() => navigate("/staff-management")}
             >
               <Users className="h-6 w-6" />
-              <span>Staff Report</span>
+              <span>Manage Staff</span>
             </Button>
             <Button
               variant="outline"
