@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GradientButton } from "@/components/ui/button-variants";
 import { Switch } from "@/components/ui/switch";
+import { MobileTimePicker } from "@/components/MobileTimePicker";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
@@ -424,30 +425,28 @@ const ProfilePage = () => {
                   <span className="font-medium text-foreground capitalize flex-shrink-0">{day}</span>
                 </div>
                 <div className="flex items-center gap-2 flex-1 pl-9 sm:pl-0">
-                  <Input
-                    type="time"
+                  <MobileTimePicker
                     value={hours.start}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setWorkingHours({
                         ...workingHours,
-                        [day]: { ...hours, start: e.target.value },
+                        [day]: { ...hours, start: value },
                       })
                     }
                     disabled={!hours.enabled}
-                    className="flex-1 min-w-0"
+                    className="flex-1"
                   />
                   <span className="text-muted-foreground text-sm flex-shrink-0">to</span>
-                  <Input
-                    type="time"
+                  <MobileTimePicker
                     value={hours.end}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setWorkingHours({
                         ...workingHours,
-                        [day]: { ...hours, end: e.target.value },
+                        [day]: { ...hours, end: value },
                       })
                     }
                     disabled={!hours.enabled}
-                    className="flex-1 min-w-0"
+                    className="flex-1"
                   />
                 </div>
               </div>
