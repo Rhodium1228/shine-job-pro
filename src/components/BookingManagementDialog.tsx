@@ -20,6 +20,7 @@ const bookingSchema = z.object({
   client_phone: z.string().trim().max(50).optional(),
   client_email: z.string().trim().email({ message: "Invalid email" }).max(255).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional(),
+  branch_id: z.string().optional(),
 });
 
 interface Staff {
@@ -40,6 +41,7 @@ interface Booking {
   client_phone?: string | null;
   client_email?: string | null;
   notes?: string | null;
+  branch_id?: string | null;
 }
 
 interface BookingManagementDialogProps {
@@ -58,6 +60,7 @@ export const BookingManagementDialog = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState({
     staff_id: "",
     client_name: "",
@@ -69,10 +72,26 @@ export const BookingManagementDialog = ({
     client_phone: "",
     client_email: "",
     notes: "",
+    branch_id: "",
   });
 
   useEffect(() => {
-    const fetchStaff = async () => {
+  const fetchBranches = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+
+      if (error) throw error;
+      setBranches(data || []);
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+    }
+  };
+
+  const fetchStaff = async () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("id, full_name, email")
@@ -102,6 +121,7 @@ export const BookingManagementDialog = ({
         client_phone: booking.client_phone || "",
         client_email: booking.client_email || "",
         notes: booking.notes || "",
+        branch_id: booking.branch_id || "",
       });
     } else {
       setFormData({
@@ -115,6 +135,7 @@ export const BookingManagementDialog = ({
         client_phone: "",
         client_email: "",
         notes: "",
+        branch_id: "",
       });
     }
   }, [booking, open]);
@@ -137,6 +158,7 @@ export const BookingManagementDialog = ({
         client_phone: validated.client_phone || null,
         client_email: validated.client_email || null,
         notes: validated.notes || null,
+        branch_id: validated.branch_id || null,
       };
 
       if (booking) {
@@ -205,6 +227,25 @@ export const BookingManagementDialog = ({
                 {staff.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     {member.full_name || member.email || "Unknown"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="branch_id">Branch (Optional)</Label>
+            <Select
+              value={formData.branch_id}
+              onValueChange={(value) => setFormData({ ...formData, branch_id: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select branch (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {branches.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.name}
                   </SelectItem>
                 ))}
               </SelectContent>
