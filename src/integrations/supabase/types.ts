@@ -25,7 +25,7 @@ export type Database = {
           id: string
           pause_reason: string | null
           paused_at: string | null
-          price: string
+          price: number
           service: string
           staff_id: string
           started_at: string
@@ -43,7 +43,7 @@ export type Database = {
           id?: string
           pause_reason?: string | null
           paused_at?: string | null
-          price: string
+          price: number
           service: string
           staff_id: string
           started_at?: string
@@ -61,7 +61,7 @@ export type Database = {
           id?: string
           pause_reason?: string | null
           paused_at?: string | null
-          price?: string
+          price?: number
           service?: string
           staff_id?: string
           started_at?: string
@@ -90,7 +90,7 @@ export type Database = {
           duration: string
           id: string
           notes: string | null
-          price: string
+          price: number
           service: string
           staff_id: string
           status: string
@@ -106,7 +106,7 @@ export type Database = {
           duration: string
           id?: string
           notes?: string | null
-          price: string
+          price: number
           service: string
           staff_id: string
           status?: string
@@ -122,7 +122,7 @@ export type Database = {
           duration?: string
           id?: string
           notes?: string | null
-          price?: string
+          price?: number
           service?: string
           staff_id?: string
           status?: string
