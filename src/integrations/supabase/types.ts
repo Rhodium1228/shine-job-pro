@@ -17,6 +17,7 @@ export type Database = {
       active_jobs: {
         Row: {
           booking_id: string
+          branch_id: string | null
           client_name: string
           completed_at: string | null
           created_at: string | null
@@ -33,6 +34,7 @@ export type Database = {
         }
         Insert: {
           booking_id: string
+          branch_id?: string | null
           client_name: string
           completed_at?: string | null
           created_at?: string | null
@@ -49,6 +51,7 @@ export type Database = {
         }
         Update: {
           booking_id?: string
+          branch_id?: string | null
           client_name?: string
           completed_at?: string | null
           created_at?: string | null
@@ -63,7 +66,15 @@ export type Database = {
           total_paused_seconds?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "active_jobs_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bookings: {
         Row: {

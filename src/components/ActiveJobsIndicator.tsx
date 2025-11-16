@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useBranch } from "@/contexts/BranchContext";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { calculateElapsedTime, type ActiveJob } from "@/utils/timeSync";
 
 export const ActiveJobsIndicator = () => {
+  const { selectedBranch } = useBranch();
   const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
   const [jobTimes, setJobTimes] = useState<Record<string, number>>({});
 
@@ -33,7 +35,7 @@ export const ActiveJobsIndicator = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [selectedBranch]);
 
   // Update times every second
   useEffect(() => {
@@ -54,11 +56,17 @@ export const ActiveJobsIndicator = () => {
 
   const loadActiveJobs = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('active_jobs')
         .select('*')
-        .in('status', ['active', 'paused'])
-        .order('started_at', { ascending: false });
+        .in('status', ['active', 'paused']);
+
+      // Filter by branch if one is selected
+      if (selectedBranch) {
+        query = query.eq('branch_id', selectedBranch.id);
+      }
+
+      const { data, error } = await query.order('started_at', { ascending: false });
 
       if (error) throw error;
       setActiveJobs((data || []) as ActiveJob[]);

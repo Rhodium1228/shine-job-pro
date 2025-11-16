@@ -18,6 +18,7 @@ export interface ActiveJob {
   total_paused_seconds: number;
   status: 'active' | 'paused' | 'completed';
   completed_at: string | null;
+  branch_id?: string | null;
 }
 
 export interface BreakSession {
@@ -78,7 +79,8 @@ export const startJob = async (
   clientName: string,
   service: string,
   price: string,
-  duration: string
+  duration: string,
+  branchId?: string | null
 ): Promise<ActiveJob | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -97,6 +99,7 @@ export const startJob = async (
         price: price,
         duration: duration,
         status: 'active',
+        branch_id: branchId || null,
       })
       .select()
       .single();
