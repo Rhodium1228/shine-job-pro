@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 
 interface StaffFormDialogProps {
   open: boolean;
@@ -19,6 +19,7 @@ interface StaffFormDialogProps {
 export const StaffFormDialog = ({ open, onOpenChange, staffId, onSuccess }: StaffFormDialogProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -26,6 +27,7 @@ export const StaffFormDialog = ({ open, onOpenChange, staffId, onSuccess }: Staf
     bio: "",
     hourly_rate: "",
     specialties: "",
+    avatar_url: "",
   });
 
   useEffect(() => {
@@ -61,6 +63,7 @@ export const StaffFormDialog = ({ open, onOpenChange, staffId, onSuccess }: Staf
       bio: data.bio || "",
       hourly_rate: data.hourly_rate?.toString() || "",
       specialties: data.specialties?.join(", ") || "",
+      avatar_url: data.avatar_url || "",
     });
   };
 
@@ -72,7 +75,55 @@ export const StaffFormDialog = ({ open, onOpenChange, staffId, onSuccess }: Staf
       bio: "",
       hourly_rate: "",
       specialties: "",
+      avatar_url: "",
     });
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !staffId) return;
+
+    try {
+      setUploading(true);
+
+      // Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${staffId}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', staffId);
+
+      if (updateError) throw updateError;
+
+      setFormData({ ...formData, avatar_url: publicUrl });
+      
+      toast({
+        title: "Success",
+        description: "Avatar uploaded successfully"
+      });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload avatar",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,6 +185,38 @@ export const StaffFormDialog = ({ open, onOpenChange, staffId, onSuccess }: Staf
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Avatar Upload */}
+          {staffId && (
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                {formData.avatar_url ? (
+                  <img src={formData.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-semibold text-primary">
+                    {formData.full_name?.charAt(0) || "?"}
+                  </span>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="avatar" className="cursor-pointer">
+                  <div className="text-sm text-muted-foreground mb-1">Profile Picture</div>
+                  <Button type="button" variant="outline" size="sm" disabled={uploading} asChild>
+                    <span>
+                      {uploading ? "Uploading..." : "Upload Picture"}
+                    </span>
+                  </Button>
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                </Label>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="full_name">Full Name *</Label>
