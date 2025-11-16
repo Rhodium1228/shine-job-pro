@@ -65,6 +65,54 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          booking_time: string
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          duration: string
+          id: string
+          notes: string | null
+          price: string
+          service: string
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_time: string
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          duration: string
+          id?: string
+          notes?: string | null
+          price: string
+          service: string
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_time?: string
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          duration?: string
+          id?: string
+          notes?: string | null
+          price?: string
+          service?: string
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       break_sessions: {
         Row: {
           break_duration_minutes: number

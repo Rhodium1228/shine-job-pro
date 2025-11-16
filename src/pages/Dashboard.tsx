@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Clock, DollarSign, User, TrendingUp } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
@@ -6,60 +6,122 @@ import BreakButton from "@/components/BreakButton";
 import { ActiveJobsIndicator } from "@/components/ActiveJobsIndicator";
 import { HandoffNotifications } from "@/components/HandoffNotifications";
 import { AvailabilityStatusToggle } from "@/components/AvailabilityStatusToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
-// Mock data
-const mockBookings = [
-  {
-    id: "1",
-    clientName: "Sarah Johnson",
-    service: "Deep Tissue Massage",
-    time: "10:00 AM",
-    duration: "60 min",
-    status: "pending" as const,
-    price: "$120",
-  },
-  {
-    id: "2",
-    clientName: "Michael Chen",
-    service: "Swedish Massage",
-    time: "11:30 AM",
-    duration: "90 min",
-    status: "pending" as const,
-    price: "$150",
-  },
-  {
-    id: "3",
-    clientName: "Emma Davis",
-    service: "Hot Stone Therapy",
-    time: "2:00 PM",
-    duration: "75 min",
-    status: "accepted" as const,
-    price: "$180",
-  },
-  {
-    id: "4",
-    clientName: "James Wilson",
-    service: "Sports Massage",
-    time: "4:00 PM",
-    duration: "60 min",
-    status: "pending" as const,
-    price: "$130",
-  },
-];
+interface Booking {
+  id: string;
+  clientName: string;
+  service: string;
+  time: string;
+  duration: string;
+  status: "pending" | "accepted";
+  price: string;
+}
 
 const Dashboard = () => {
-  const [bookings, setBookings] = useState(mockBookings);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const handleAccept = (id: string) => {
-    setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === id ? { ...booking, status: "accepted" as const } : booking
-      )
-    );
+  // Fetch today's bookings
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .eq("staff_id", user.id)
+          .gte("booking_time", today.toISOString())
+          .lt("booking_time", tomorrow.toISOString())
+          .order("booking_time", { ascending: true });
+
+        if (error) throw error;
+
+        const formattedBookings: Booking[] = (data || []).map((booking) => ({
+          id: booking.id,
+          clientName: booking.client_name,
+          service: booking.service,
+          time: format(new Date(booking.booking_time), "h:mm a"),
+          duration: booking.duration,
+          status: booking.status as "pending" | "accepted",
+          price: booking.price,
+        }));
+
+        setBookings(formattedBookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load bookings",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [toast]);
+
+  const handleAccept = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status: "accepted" })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === id ? { ...booking, status: "accepted" as const } : booking
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Booking accepted",
+      });
+    } catch (error) {
+      console.error("Error accepting booking:", error);
+      toast({
+        title: "Error",
+        description: "Failed to accept booking",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDecline = (id: string) => {
-    setBookings((prev) => prev.filter((booking) => booking.id !== id));
+  const handleDecline = async (id: string) => {
+    try {
+      const { error } = await supabase.from("bookings").delete().eq("id", id);
+
+      if (error) throw error;
+
+      setBookings((prev) => prev.filter((booking) => booking.id !== id));
+
+      toast({
+        title: "Success",
+        description: "Booking declined",
+      });
+    } catch (error) {
+      console.error("Error declining booking:", error);
+      toast({
+        title: "Error",
+        description: "Failed to decline booking",
+        variant: "destructive",
+      });
+    }
   };
 
   const stats = [
