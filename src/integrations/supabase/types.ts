@@ -145,6 +145,44 @@ export type Database = {
           },
         ]
       }
+      bookings_audit_log: {
+        Row: {
+          accessed_at: string
+          accessed_by: string
+          booking_id: string
+          client_email: string | null
+          client_phone: string | null
+          id: string
+          operation: string
+        }
+        Insert: {
+          accessed_at?: string
+          accessed_by: string
+          booking_id: string
+          client_email?: string | null
+          client_phone?: string | null
+          id?: string
+          operation: string
+        }
+        Update: {
+          accessed_at?: string
+          accessed_by?: string
+          booking_id?: string
+          client_email?: string | null
+          client_phone?: string | null
+          id?: string
+          operation?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_audit_log_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           acsu_bonus_multiplier: number | null

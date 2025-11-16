@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
-import { corsHeaders } from '../_shared/auth-middleware.ts';
+import { corsHeaders, checkRateLimit } from '../_shared/auth-middleware.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,6 +15,17 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Email and password are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limit: 5 login attempts per 5 minutes per email
+    try {
+      checkRateLimit(email.toLowerCase(), 5, 5 * 60 * 1000);
+    } catch (rateLimitError) {
+      console.log('Rate limit exceeded for:', email);
+      return new Response(
+        JSON.stringify({ error: 'Too many login attempts. Please try again in 5 minutes.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
