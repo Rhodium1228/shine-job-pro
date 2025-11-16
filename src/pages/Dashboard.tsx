@@ -52,26 +52,38 @@ const Dashboard = () => {
     };
     loadStatus();
     
-    // Subscribe to real-time profile changes
-    const channel = supabase
-      .channel('profile-status')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-        },
-        (payload) => {
-          if (payload.new && 'availability_status' in payload.new) {
-            setAvailabilityStatus(payload.new.availability_status as any);
-          }
-        }
-      )
-      .subscribe();
+    // Subscribe to real-time profile changes for current user
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
+      const channel = supabase
+        .channel('profile-status')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
+          },
+          (payload) => {
+            if (payload.new && 'availability_status' in payload.new) {
+              setAvailabilityStatus(payload.new.availability_status as any);
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    const cleanup = setupRealtimeSubscription();
+    
     return () => {
-      supabase.removeChannel(channel);
+      cleanup.then(fn => fn && fn());
     };
   }, []);
 
