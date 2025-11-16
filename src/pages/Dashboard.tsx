@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin } from "lucide-react";
+import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin, Check, Coffee, WifiOff } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
@@ -16,6 +16,8 @@ import { useBranch } from "@/contexts/BranchContext";
 import { useUserBranches } from "@/hooks/useUserBranches";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { getCurrentAvailabilityStatus } from "@/utils/availabilitySync";
 interface Booking {
   id: string;
   clientName: string;
@@ -39,6 +41,40 @@ const Dashboard = () => {
   } = useUserBranches();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'busy' | 'on_break' | 'offline'>('available');
+  // Load current availability status
+  useEffect(() => {
+    const loadStatus = async () => {
+      const status = await getCurrentAvailabilityStatus();
+      if (status) {
+        setAvailabilityStatus(status);
+      }
+    };
+    loadStatus();
+    
+    // Subscribe to real-time profile changes
+    const channel = supabase
+      .channel('profile-status')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+        },
+        (payload) => {
+          if (payload.new && 'availability_status' in payload.new) {
+            setAvailabilityStatus(payload.new.availability_status as any);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     // Redirect to branch selector if user has multiple branches but none selected
     if (branches.length > 1 && !selectedBranch) {
@@ -161,22 +197,53 @@ const Dashboard = () => {
   }];
   return <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <div className="gradient-primary text-white p-6 pb-8 rounded-b-[2rem]">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex-1">
-            <h2 className="text-xl font-bold">Welcome back!</h2>
-            <p className="text-white/80 text-sm">Ready to start your day?</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <AvailabilityStatusToggle />
-            <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <TrendingUp className="w-5 h-5" />
-            </button>
-          </div>
+      <div className="gradient-primary text-white p-6 pb-8 rounded-b-[2rem] relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
         </div>
+        
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-white/80 text-sm mb-1">Welcome back</p>
+              <h1 className="text-2xl font-bold">Dashboard</h1>
+            </div>
+            <AvailabilityStatusToggle />
+          </div>
 
-        {/* Branch Indicator Card */}
-        {selectedBranch && <Card className="glass-card border-white/20 p-4 mb-6 animate-slide-up bg-indigo-700">
+          {/* Status Banner */}
+          {availabilityStatus !== 'available' && (
+            <div className={cn(
+              "mb-4 p-4 rounded-xl border-2 backdrop-blur-sm animate-fade-in",
+              availabilityStatus === 'on_break' && "bg-warning/20 border-warning/40",
+              availabilityStatus === 'busy' && "bg-info/20 border-info/40",
+              availabilityStatus === 'offline' && "bg-muted/20 border-muted/40"
+            )}>
+              <div className="flex items-center gap-3">
+                {availabilityStatus === 'on_break' && <Coffee className="w-5 h-5" />}
+                {availabilityStatus === 'busy' && <Clock className="w-5 h-5" />}
+                {availabilityStatus === 'offline' && <WifiOff className="w-5 h-5" />}
+                <div>
+                  <p className="font-semibold text-white">
+                    {availabilityStatus === 'on_break' && "You're on break"}
+                    {availabilityStatus === 'busy' && "Currently working"}
+                    {availabilityStatus === 'offline' && "You're offline"}
+                  </p>
+                  <p className="text-sm text-white/80">
+                    {availabilityStatus === 'on_break' && "Active jobs are paused"}
+                    {availabilityStatus === 'busy' && "Focused on active jobs"}
+                    {availabilityStatus === 'offline' && "Not accepting new work"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Branch Indicator Card */}
+          {selectedBranch && <Card className="glass-card border-white/20 p-4 mb-6 animate-slide-up bg-indigo-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{
@@ -232,17 +299,18 @@ const Dashboard = () => {
             </div>
           </Card>}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          {stats.map((stat, index) => <div key={stat.label} className="glass-card rounded-2xl p-3 text-center animate-slide-up" style={{
-          animationDelay: `${index * 100}ms`
-        }}>
-              <div className={`w-10 h-10 rounded-xl ${stat.gradient} mx-auto mb-2 flex items-center justify-center`}>
-                <stat.icon className="w-5 h-5 text-white" />
-              </div>
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-xs text-white/70 mt-1">{stat.label}</p>
-            </div>)}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            {stats.map((stat, index) => <div key={stat.label} className="glass-card rounded-2xl p-3 text-center animate-slide-up" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
+                <div className={`w-10 h-10 rounded-xl ${stat.gradient} mx-auto mb-2 flex items-center justify-center`}>
+                  <stat.icon className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xs text-white/70 mt-1">{stat.label}</p>
+              </div>)}
+          </div>
         </div>
       </div>
 
