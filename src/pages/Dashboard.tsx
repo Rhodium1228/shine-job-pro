@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, DollarSign, User, TrendingUp } from "lucide-react";
+import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2 } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
 import { ActiveJobsIndicator } from "@/components/ActiveJobsIndicator";
 import { HandoffNotifications } from "@/components/HandoffNotifications";
 import { AvailabilityStatusToggle } from "@/components/AvailabilityStatusToggle";
+import { BranchSwitcher } from "@/components/BranchSwitcher";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useBranch } from "@/contexts/BranchContext";
+import { useUserBranches } from "@/hooks/useUserBranches";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
 interface Booking {
@@ -21,9 +27,19 @@ interface Booking {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { selectedBranch } = useBranch();
+  const { branches } = useUserBranches();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+
+  useEffect(() => {
+    // Redirect to branch selector if user has multiple branches but none selected
+    if (branches.length > 1 && !selectedBranch) {
+      navigate("/branch-selector");
+    }
+  }, [branches, selectedBranch, navigate]);
 
   // Fetch today's bookings
   useEffect(() => {
@@ -135,14 +151,18 @@ const Dashboard = () => {
       {/* Header */}
       <div className="gradient-primary text-white p-6 pb-8 rounded-b-[2rem]">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <User className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Welcome back!</h2>
-              <p className="text-white/80 text-sm">Jessica Martinez</p>
-            </div>
+          <div>
+            <h2 className="text-xl font-bold">Welcome back!</h2>
+            <p className="text-white/80 text-sm">Ready to start your day?</p>
+            {selectedBranch && (
+              <div className="flex items-center gap-2 mt-2 text-sm">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: selectedBranch.color_theme || "#fff" }}
+                />
+                <span className="text-white/90">{selectedBranch.name}</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <AvailabilityStatusToggle />
@@ -172,6 +192,12 @@ const Dashboard = () => {
 
       {/* Today's Schedule */}
       <div className="p-6">
+        {branches.length > 1 && (
+          <div className="mb-6">
+            <BranchSwitcher />
+          </div>
+        )}
+
         {/* Break Button */}
         <div className="mb-6 animate-slide-up">
           <BreakButton isOnBreak={false} />
