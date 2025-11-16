@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { StaffFormDialog } from "@/components/StaffFormDialog";
 import { BreakRequestsPanel } from "@/components/BreakRequestsPanel";
+import { StaffServicesDialog } from "@/components/StaffServicesDialog";
 
 interface StaffMember {
   id: string;
@@ -77,6 +78,8 @@ const StaffManagement = () => {
   const [selectedTab, setSelectedTab] = useState("all");
   const [shiftHistory, setShiftHistory] = useState<ShiftHistory[]>([]);
   const [selectedStaffForHistory, setSelectedStaffForHistory] = useState<string | null>(null);
+  const [servicesDialogOpen, setServicesDialogOpen] = useState(false);
+  const [selectedStaffForServices, setSelectedStaffForServices] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchStaff();
@@ -252,6 +255,8 @@ const StaffManagement = () => {
               setFormDialogOpen={setFormDialogOpen}
               setSuspendDialogOpen={setSuspendDialogOpen}
               fetchShiftHistory={fetchShiftHistory}
+              setServicesDialogOpen={setServicesDialogOpen}
+              setSelectedStaffForServices={setSelectedStaffForServices}
             />
           </TabsContent>
 
@@ -266,6 +271,8 @@ const StaffManagement = () => {
               setFormDialogOpen={setFormDialogOpen}
               setSuspendDialogOpen={setSuspendDialogOpen}
               fetchShiftHistory={fetchShiftHistory}
+              setServicesDialogOpen={setServicesDialogOpen}
+              setSelectedStaffForServices={setSelectedStaffForServices}
             />
           </TabsContent>
 
@@ -280,6 +287,8 @@ const StaffManagement = () => {
               setFormDialogOpen={setFormDialogOpen}
               setSuspendDialogOpen={setSuspendDialogOpen}
               fetchShiftHistory={fetchShiftHistory}
+              setServicesDialogOpen={setServicesDialogOpen}
+              setSelectedStaffForServices={setSelectedStaffForServices}
             />
           </TabsContent>
 
@@ -341,6 +350,15 @@ const StaffManagement = () => {
         onSuccess={fetchStaff}
       />
 
+      {selectedStaffForServices && (
+        <StaffServicesDialog
+          open={servicesDialogOpen}
+          onOpenChange={setServicesDialogOpen}
+          staffId={selectedStaffForServices.id}
+          staffName={selectedStaffForServices.name}
+        />
+      )}
+
       <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -378,6 +396,8 @@ const StaffListContent = ({
   setFormDialogOpen,
   setSuspendDialogOpen,
   fetchShiftHistory,
+  setServicesDialogOpen,
+  setSelectedStaffForServices,
 }: any) => (
   <>
     <div className="relative">
@@ -421,15 +441,27 @@ const StaffListContent = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setSelectedStaffId(member.id);
-                      setFormDialogOpen(true);
-                    }}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Profile
-                  </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedStaffId(member.id);
+                          setFormDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedStaffForServices({
+                            id: member.id,
+                            name: member.full_name || "Unknown"
+                          });
+                          setServicesDialogOpen(true);
+                        }}
+                      >
+                        <ClipboardCheck className="mr-2 h-4 w-4" />
+                        Manage Services & Pricing
+                      </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => fetchShiftHistory(member.id)}>
                     <Clock className="mr-2 h-4 w-4" />
                     View Shift History
