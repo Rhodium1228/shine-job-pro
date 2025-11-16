@@ -98,6 +98,53 @@ export type Database = {
         }
         Relationships: []
       }
+      handoff_notifications: {
+        Row: {
+          client_name: string
+          created_at: string
+          from_staff_id: string
+          id: string
+          job_id: string
+          message: string | null
+          service: string
+          status: Database["public"]["Enums"]["handoff_status"]
+          to_staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          from_staff_id: string
+          id?: string
+          job_id: string
+          message?: string | null
+          service: string
+          status?: Database["public"]["Enums"]["handoff_status"]
+          to_staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          from_staff_id?: string
+          id?: string
+          job_id?: string
+          message?: string | null
+          service?: string
+          status?: Database["public"]["Enums"]["handoff_status"]
+          to_staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handoff_notifications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "active_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -157,7 +204,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      handoff_status: "pending" | "accepted" | "rejected" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -284,6 +331,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      handoff_status: ["pending", "accepted", "rejected", "cancelled"],
+    },
   },
 } as const

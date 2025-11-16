@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Clock, User, DollarSign, CheckCircle, Pause, Play } from "lucide-react";
+import { ArrowLeft, Clock, User, DollarSign, CheckCircle, Pause, Play, ArrowRight } from "lucide-react";
 import SlideToStart from "@/components/SlideToStart";
 import { GradientButton } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { playStartSound, playPauseSound, playResumeSound, playCompleteSound } from "@/utils/soundEffects";
 import { supabase } from "@/integrations/supabase/client";
+import { HandoffDialog } from "@/components/HandoffDialog";
 import {
   startJob,
   pauseJob,
@@ -35,6 +36,7 @@ const JobFlow = () => {
   const [jobStatus, setJobStatus] = useState<"ready" | "active" | "paused" | "completed">("ready");
   const [elapsedTime, setElapsedTime] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [handoffDialogOpen, setHandoffDialogOpen] = useState(false);
 
   // Check for existing active job on mount
   useEffect(() => {
@@ -341,13 +343,22 @@ const JobFlow = () => {
                   )}
                 </Button>
                 <Button
-                  onClick={handleCancel}
+                  onClick={() => setHandoffDialogOpen(true)}
                   variant="outline"
-                  className="h-14 text-base border-destructive/30 text-destructive hover:bg-destructive/10"
+                  className="h-14 text-base"
                 >
-                  Cancel Job
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  Transfer
                 </Button>
               </div>
+              
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="w-full h-12 text-base border-destructive/30 text-destructive hover:bg-destructive/10"
+              >
+                Cancel Job
+              </Button>
 
               <GradientButton
                 onClick={handleComplete}
@@ -381,6 +392,17 @@ const JobFlow = () => {
           </div>
         )}
       </div>
+
+      {/* Handoff Dialog */}
+      {activeJobData && (
+        <HandoffDialog
+          open={handoffDialogOpen}
+          onOpenChange={setHandoffDialogOpen}
+          jobId={activeJobData.id}
+          clientName={activeJobData.client_name}
+          service={activeJobData.service}
+        />
+      )}
     </div>
   );
 };

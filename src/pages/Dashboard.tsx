@@ -4,6 +4,7 @@ import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
 import { ActiveJobsIndicator } from "@/components/ActiveJobsIndicator";
+import { HandoffNotifications } from "@/components/HandoffNotifications";
 
 // Mock data
 const mockBookings = [
@@ -112,6 +113,9 @@ const Dashboard = () => {
 
         {/* Active Jobs Indicator */}
         <ActiveJobsIndicator />
+
+        {/* Handoff Notifications */}
+        <HandoffNotifications />
 
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-foreground">Today's Schedule</h3>
