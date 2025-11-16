@@ -146,7 +146,8 @@ const JobFlow = () => {
       bookingData.clientName,
       bookingData.service,
       bookingData.price,
-      bookingData.duration
+      bookingData.duration,
+      selectedBranch?.id
     );
     
     if (job) {
