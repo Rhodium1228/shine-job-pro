@@ -199,6 +199,70 @@ class ApiClient {
   async delete<T = any>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
+
+  // Staff endpoints
+  async getStaffProfile() {
+    return this.get('api-v1-staff-profile');
+  }
+
+  async getStaffBookings(params?: {
+    status?: string;
+    branchId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    return this.get('api-v1-staff-bookings', params);
+  }
+
+  async acceptBooking(bookingId: string) {
+    return this.post('api-v1-staff-booking-action', { bookingId, action: 'accept' });
+  }
+
+  async declineBooking(bookingId: string, reason?: string) {
+    return this.post('api-v1-staff-booking-action', { bookingId, action: 'decline', reason });
+  }
+
+  async startJob(jobId: string) {
+    return this.post('api-v1-staff-job-action', { jobId, action: 'start' });
+  }
+
+  async pauseJob(jobId: string, reason?: string) {
+    return this.post('api-v1-staff-job-action', { jobId, action: 'pause', reason });
+  }
+
+  async resumeJob(jobId: string) {
+    return this.post('api-v1-staff-job-action', { jobId, action: 'resume' });
+  }
+
+  async completeJob(jobId: string) {
+    return this.post('api-v1-staff-job-action', { jobId, action: 'complete' });
+  }
+
+  async cancelJob(jobId: string, reason?: string) {
+    return this.post('api-v1-staff-job-action', { jobId, action: 'cancel', reason });
+  }
+
+  async startBreak(duration: number) {
+    return this.post('api-v1-staff-break', { action: 'start', duration });
+  }
+
+  async endBreak() {
+    return this.post('api-v1-staff-break', { action: 'end' });
+  }
+
+  async awardAcsuPoints(customerId: string, points: number, reason?: string, branchId?: string) {
+    return this.post('api-v1-staff-acsu-award', { customerId, points, reason, branchId });
+  }
+
+  async getStaffEarnings(params?: {
+    dateFrom?: string;
+    dateTo?: string;
+    branchId?: string;
+  }) {
+    return this.get('api-v1-staff-earnings', params);
+  }
 }
 
 // Export singleton instance

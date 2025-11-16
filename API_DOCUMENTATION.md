@@ -388,6 +388,17 @@ Client uses:
 
 ### Changelog
 
+**v2.0.0** - Phase 2 Complete
+- Staff profile endpoint with branches
+- Booking list with pagination & filters
+- Booking accept/decline actions
+- Job flow management (start/pause/resume/complete/cancel)
+- Break management (start/end)
+- ACSU points award integration
+- Earnings summary with daily breakdown
+- Staff API service layer
+- Complete TypeScript types
+
 **v1.0.0** - Phase 1 Complete
 - JWT-based authentication endpoints
 - Token refresh mechanism
@@ -395,3 +406,430 @@ Client uses:
 - React API client
 - Auth hook for state management
 - AuthPage refactored to use API layer
+
+---
+
+## Phase 2: Staff Endpoints
+
+### GET /api-v1-staff-profile
+
+Get authenticated staff member's complete profile including assigned branches.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Response (200):**
+```json
+{
+  "profile": {
+    "id": "uuid",
+    "full_name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "avatar_url": "https://...",
+    "bio": "Experienced stylist specializing in...",
+    "specialties": ["haircut", "coloring", "styling"],
+    "hourly_rate": 25.00,
+    "rating": 4.8,
+    "total_reviews": 120,
+    "availability_status": "available",
+    "working_hours": {...},
+    "default_branch_id": "branch-uuid",
+    "role": "staff"
+  },
+  "branches": [
+    {
+      "id": "branch-uuid",
+      "isDefault": true,
+      "name": "Downtown Branch",
+      "address": "123 Main St",
+      "phone": "+1234567890",
+      "logo_url": "https://..."
+    }
+  ]
+}
+```
+
+---
+
+### GET /api-v1-staff-bookings
+
+List staff member's bookings with filtering and pagination.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Query Parameters:**
+- `status` (optional): Filter by status (pending, confirmed, in_progress, completed, cancelled)
+- `branchId` (optional): Filter by specific branch
+- `dateFrom` (optional): ISO date string for date range start
+- `dateTo` (optional): ISO date string for date range end
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Results per page (default: 50, max: 100)
+
+**Response (200):**
+```json
+{
+  "bookings": [
+    {
+      "id": "uuid",
+      "staff_id": "uuid",
+      "client_name": "Jane Smith",
+      "client_email": "jane@example.com",
+      "client_phone": "+1234567890",
+      "service": "Haircut & Style",
+      "price": "45.00",
+      "duration": "60",
+      "booking_time": "2025-01-15T10:00:00Z",
+      "status": "confirmed",
+      "notes": "Customer prefers natural products",
+      "branch_id": "branch-uuid",
+      "created_at": "2025-01-10T08:00:00Z",
+      "updated_at": "2025-01-10T08:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 120,
+    "totalPages": 3
+  }
+}
+```
+
+---
+
+### POST /api-v1-staff-booking-action
+
+Accept or decline a booking assignment.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Request:**
+```json
+{
+  "bookingId": "uuid",
+  "action": "accept" | "decline",
+  "reason": "Optional reason for declining"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "bookingId": "uuid",
+  "newStatus": "confirmed" | "cancelled"
+}
+```
+
+**Errors:**
+- `400` Invalid action or missing required fields
+- `404` Booking not found or staff doesn't have access
+
+**Side Effects:**
+- Updates `bookings.status` to `confirmed` or `cancelled`
+- Appends decline reason to `bookings.notes` if provided
+
+---
+
+### POST /api-v1-staff-job-action
+
+Manage active job lifecycle through various states.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Request:**
+```json
+{
+  "jobId": "uuid",  // booking_id for 'start', active_job_id for other actions
+  "action": "start" | "pause" | "resume" | "complete" | "cancel",
+  "reason": "Optional reason for pause/cancel actions"
+}
+```
+
+**Action Details:**
+
+**start**: Creates new active job from confirmed booking
+- Creates entry in `active_jobs` table
+- Updates booking status to `in_progress`
+- Logs staff status as `busy` in `status_history`
+
+**pause**: Temporarily suspends active job
+- Updates job status to `paused` and records `paused_at` timestamp
+- Logs staff status as `on_break`
+- Tracks pause reason for reporting
+
+**resume**: Continues paused job
+- Calculates paused duration and adds to `total_paused_seconds`
+- Changes job status back to `active`
+- Updates staff status to `busy`
+
+**complete**: Finishes active job
+- Marks job as `completed` with `completed_at` timestamp
+- Updates booking status to `completed`
+- Changes staff status to `available`
+- Job data retained for earnings calculations
+
+**cancel**: Aborts active job
+- Removes job from `active_jobs` table
+- Updates booking status to `cancelled`
+- Appends cancellation reason to booking notes
+- Returns staff to `available` status
+
+**Response (200) for 'start':**
+```json
+{
+  "success": true,
+  "job": {
+    "id": "active-job-uuid",
+    "booking_id": "uuid",
+    "staff_id": "uuid",
+    "branch_id": "uuid",
+    "client_name": "Jane Smith",
+    "service": "Haircut & Style",
+    "price": "45.00",
+    "duration": "60",
+    "status": "active",
+    "started_at": "2025-01-15T10:00:00Z",
+    "total_paused_seconds": 0
+  }
+}
+```
+
+**Response (200) for other actions:**
+```json
+{
+  "success": true,
+  "action": "pause" | "resume" | "complete" | "cancel"
+}
+```
+
+**Errors:**
+- `400` Invalid action
+- `404` Job/booking not found or access denied
+
+---
+
+### POST /api-v1-staff-break
+
+Start or end a break session.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Start Break Request:**
+```json
+{
+  "action": "start",
+  "duration": 15  // Duration in minutes
+}
+```
+
+**End Break Request:**
+```json
+{
+  "action": "end"
+}
+```
+
+**Response (200) - Start:**
+```json
+{
+  "success": true,
+  "breakSession": {
+    "id": "uuid",
+    "staff_id": "uuid",
+    "break_duration_minutes": 15,
+    "started_at": "2025-01-15T12:00:00Z",
+    "ends_at": "2025-01-15T12:15:00Z",
+    "status": "active"
+  }
+}
+```
+
+**Response (200) - End:**
+```json
+{
+  "success": true
+}
+```
+
+**Errors:**
+- `400` Break already in progress (for start) / Duration required / No active break (for end)
+- `404` No active break found (for end)
+
+**Side Effects:**
+- Creates/updates entries in `break_sessions` table
+- Updates `status_history` with break periods
+- Enforces single active break per staff member
+
+---
+
+### POST /api-v1-staff-acsu-award
+
+Award ACSU loyalty points to a customer.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Request:**
+```json
+{
+  "customerId": "customer-external-id",
+  "points": 100,
+  "reason": "Excellent service and customer satisfaction",
+  "branchId": "branch-uuid"  // optional
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "transaction": {
+    "transactionId": "txn_abc123",
+    "newBalance": 1350,
+    "pointsAwarded": 100,
+    "timestamp": "2025-01-15T14:30:00Z",
+    "notification": {
+      "sent": true,
+      "message": "You've earned 100 ACSU points!"
+    }
+  }
+}
+```
+
+**Errors:**
+- `400` Missing customer ID or invalid points amount
+- `500` ACSU API failure
+
+**Side Effects:**
+- Calls `acsu-points-award` Edge Function (external ACSU API)
+- Logs transaction in `loyalty_transactions` table
+- Calculates and stores updated balance
+- Triggers customer notification via ACSU
+
+---
+
+### GET /api-v1-staff-earnings
+
+Get comprehensive earnings summary and daily breakdown.
+
+**Headers:** `Authorization: Bearer {token}`
+
+**Query Parameters:**
+- `dateFrom` (optional): ISO date string (default: 30 days ago)
+- `dateTo` (optional): ISO date string (default: current time)
+- `branchId` (optional): Filter by specific branch
+
+**Response (200):**
+```json
+{
+  "summary": {
+    "totalJobs": 45,
+    "totalHours": 112.5,
+    "totalRevenue": 3250.00,
+    "estimatedEarnings": 2812.50,
+    "hourlyRate": 25.00,
+    "averageJobValue": 72.22
+  },
+  "dailyBreakdown": [
+    {
+      "date": "2025-01-15",
+      "jobs": 8,
+      "hours": 7.5,
+      "revenue": 580.00
+    },
+    {
+      "date": "2025-01-14",
+      "jobs": 7,
+      "hours": 6.25,
+      "revenue": 520.00
+    }
+  ]
+}
+```
+
+**Calculation Logic:**
+- **Hours**: `(completed_at - started_at - total_paused_seconds) / 3600`
+- **Estimated Earnings**: `totalHours × hourlyRate` from profile
+- **Total Revenue**: Sum of all `price` values from completed jobs
+- **Average Job Value**: `totalRevenue / totalJobs`
+
+**Data Source:** Only includes jobs with `status = 'completed'` from `active_jobs` table
+
+---
+
+## Client-Side Usage
+
+### Low-Level API Client
+
+```typescript
+import { apiClient } from '@/lib/api-client';
+
+// Staff endpoints
+const profile = await apiClient.getStaffProfile();
+const bookings = await apiClient.getStaffBookings({ 
+  status: 'confirmed', 
+  page: 1,
+  limit: 20 
+});
+await apiClient.acceptBooking(bookingId);
+await apiClient.declineBooking(bookingId, 'Schedule conflict');
+await apiClient.startJob(bookingId);
+await apiClient.pauseJob(activeJobId, 'Customer phone call');
+await apiClient.resumeJob(activeJobId);
+await apiClient.completeJob(activeJobId);
+await apiClient.cancelJob(activeJobId, 'Customer no-show');
+await apiClient.startBreak(15);
+await apiClient.endBreak();
+await apiClient.awardAcsuPoints('cust_123', 100, 'Great service');
+const earnings = await apiClient.getStaffEarnings({ dateFrom, dateTo });
+```
+
+### High-Level Staff Service
+
+With automatic toast notifications and error handling:
+
+```typescript
+import { staffApi } from '@/services/staff-api';
+
+try {
+  const profile = await staffApi.getProfile();
+  // Success toast automatically shown
+} catch (error) {
+  // Error toast automatically shown
+  console.error(error);
+}
+
+// All methods follow same pattern:
+const { bookings, pagination } = await staffApi.getBookings({ status: 'pending' });
+await staffApi.acceptBooking(bookingId);  // Shows "Booking accepted successfully"
+await staffApi.startJob(bookingId);  // Shows "Job started"
+await staffApi.completeJob(jobId);  // Shows "Job completed!"
+await staffApi.startBreak(15);  // Shows "Break started for 15 minutes"
+await staffApi.awardAcsuPoints(customerId, 100);  // Shows "100 points awarded successfully"
+const earnings = await staffApi.getEarnings();
+```
+
+### TypeScript Types
+
+```typescript
+import type {
+  StaffProfile,
+  Booking,
+  BookingsResponse,
+  EarningsSummary,
+  DailyBreakdown,
+  EarningsResponse,
+} from '@/services/staff-api';
+```
+
+---
+
+## Next Phase: Admin Endpoints
+
+**Phase 3: Admin - Branch & Staff Management**
+- Branch CRUD operations
+- Staff CRUD with suspend/activate
+- Staff assignments and permissions
+- Shift history tracking
+
+Coming soon...

@@ -17,3 +17,24 @@ verify_jwt = false
 
 [functions.api-v1-auth-session]
 verify_jwt = false
+
+[functions.api-v1-staff-profile]
+verify_jwt = false
+
+[functions.api-v1-staff-bookings]
+verify_jwt = false
+
+[functions.api-v1-staff-booking-action]
+verify_jwt = false
+
+[functions.api-v1-staff-job-action]
+verify_jwt = false
+
+[functions.api-v1-staff-break]
+verify_jwt = false
+
+[functions.api-v1-staff-acsu-award]
+verify_jwt = false
+
+[functions.api-v1-staff-earnings]
+verify_jwt = false
