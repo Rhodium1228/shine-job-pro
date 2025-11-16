@@ -7,6 +7,15 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { playStartSound, playPauseSound, playResumeSound, playCompleteSound } from "@/utils/soundEffects";
+import {
+  startJob,
+  pauseJob,
+  resumeJob,
+  completeJob,
+  getActiveJob,
+  calculateElapsedTime,
+  type ActiveJob,
+} from "@/utils/timeSync";
 
 const JobFlow = () => {
   const navigate = useNavigate();
@@ -21,21 +30,42 @@ const JobFlow = () => {
     duration: searchParams.get("duration") || "60 min",
   };
 
+  const [activeJobData, setActiveJobData] = useState<ActiveJob | null>(null);
   const [jobStatus, setJobStatus] = useState<"ready" | "active" | "paused" | "completed">("ready");
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Check for existing active job on mount
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    const checkActiveJob = async () => {
+      const existingJob = await getActiveJob();
+      if (existingJob) {
+        setActiveJobData(existingJob);
+        setJobStatus(existingJob.status === 'paused' ? 'paused' : 'active');
+      }
+      setLoading(false);
+    };
+    checkActiveJob();
+  }, []);
 
-    if (jobStatus === "active" && !isPaused) {
-      interval = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-      }, 1000);
-    }
+  // Update elapsed time every second using server timestamp
+  useEffect(() => {
+    if (!activeJobData || jobStatus === 'completed') return;
+
+    const updateTime = () => {
+      const elapsed = calculateElapsedTime(
+        activeJobData.started_at,
+        activeJobData.paused_at,
+        activeJobData.total_paused_seconds
+      );
+      setElapsedTime(elapsed);
+    };
+
+    updateTime(); // Initial update
+    const interval = setInterval(updateTime, 1000);
 
     return () => clearInterval(interval);
-  }, [jobStatus, isPaused]);
+  }, [activeJobData, jobStatus]);
 
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -44,30 +74,88 @@ const JobFlow = () => {
     return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleStart = () => {
-    playStartSound(); // Play engaging start sound
-    setJobStatus("active");
-    toast.success("Job started! 🚀");
-  };
-
-  const handlePauseResume = () => {
-    if (isPaused) {
-      playResumeSound(); // Play resume sound
-      toast("Timer resumed ▶️");
+  const handleStart = async () => {
+    playStartSound();
+    setLoading(true);
+    
+    const job = await startJob(
+      bookingData.id,
+      bookingData.clientName,
+      bookingData.service,
+      bookingData.price,
+      bookingData.duration
+    );
+    
+    if (job) {
+      setActiveJobData(job);
+      setJobStatus("active");
+      toast.success("Job started! 🚀");
     } else {
-      playPauseSound(); // Play pause sound
-      toast("Timer paused ⏸️");
+      toast.error("Failed to start job");
     }
-    setIsPaused(!isPaused);
+    
+    setLoading(false);
   };
 
-  const handleComplete = () => {
-    playCompleteSound(); // Play triumphant completion sound
-    setJobStatus("completed");
-    toast.success("Job completed! Great work! 🎉");
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 2000);
+  const handlePauseResume = async () => {
+    if (!activeJobData) return;
+    
+    setLoading(true);
+    
+    if (jobStatus === 'paused') {
+      // Resume
+      const success = await resumeJob(activeJobData.id, activeJobData.total_paused_seconds);
+      if (success) {
+        playResumeSound();
+        setJobStatus('active');
+        // Update local state to reflect resume
+        setActiveJobData({
+          ...activeJobData,
+          paused_at: null,
+          status: 'active',
+        });
+        toast("Timer resumed ▶️");
+      } else {
+        toast.error("Failed to resume job");
+      }
+    } else {
+      // Pause
+      const success = await pauseJob(activeJobData.id);
+      if (success) {
+        playPauseSound();
+        setJobStatus('paused');
+        // Update local state to reflect pause
+        setActiveJobData({
+          ...activeJobData,
+          paused_at: new Date().toISOString(),
+          status: 'paused',
+        });
+        toast("Timer paused ⏸️");
+      } else {
+        toast.error("Failed to pause job");
+      }
+    }
+    
+    setLoading(false);
+  };
+
+  const handleComplete = async () => {
+    if (!activeJobData) return;
+    
+    setLoading(true);
+    const success = await completeJob(activeJobData.id);
+    
+    if (success) {
+      playCompleteSound();
+      setJobStatus("completed");
+      toast.success("Job completed! Great work! 🎉");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+    } else {
+      toast.error("Failed to complete job");
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -151,13 +239,26 @@ const JobFlow = () => {
             {jobStatus === "active" && (
               <div className={cn(
                 "mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-                isPaused ? "bg-warning/20 text-warning" : "bg-success/20 text-success"
+                "bg-success/20 text-success"
               )}>
                 <div className={cn(
                   "w-2 h-2 rounded-full",
-                  isPaused ? "bg-warning" : "bg-success animate-pulse"
+                  "bg-success animate-pulse"
                 )} />
-                {isPaused ? "Paused" : "In Progress"}
+                In Progress
+              </div>
+            )}
+
+            {jobStatus === "paused" && (
+              <div className={cn(
+                "mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
+                "bg-warning/20 text-warning"
+              )}>
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  "bg-warning"
+                )} />
+                Paused
               </div>
             )}
           </div>
@@ -170,7 +271,7 @@ const JobFlow = () => {
               <p className="text-center text-muted-foreground mb-4">
                 Slide to confirm you're starting this job
               </p>
-              <SlideToStart onComplete={handleStart} />
+              <SlideToStart onComplete={handleStart} disabled={loading} />
             </>
           )}
 
@@ -181,8 +282,9 @@ const JobFlow = () => {
                   onClick={handlePauseResume}
                   variant="outline"
                   className="h-14 text-base"
+                  disabled={loading}
                 >
-                  {isPaused ? (
+                  {jobStatus === 'paused' ? (
                     <>
                       <Play className="w-5 h-5 mr-2" />
                       Resume
@@ -207,6 +309,7 @@ const JobFlow = () => {
                 onClick={handleComplete}
                 variant="success"
                 className="w-full h-14 text-lg"
+                disabled={loading || jobStatus === 'paused'}
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Complete Job
