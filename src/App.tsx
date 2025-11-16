@@ -14,6 +14,7 @@ import EarningsPage from "./pages/EarningsPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import ACSUWallet from "./pages/ACSUWallet";
+import BookingManagement from "./pages/BookingManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
+          <Route path="/booking-management" element={<ProtectedRoute><BookingManagement /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
