@@ -13,6 +13,7 @@ import CalendarView from "./pages/CalendarView";
 import EarningsPage from "./pages/EarningsPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
+import ACSUWallet from "./pages/ACSUWallet";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/earnings" element={<EarningsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/acsu-wallet" element={<ACSUWallet />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
