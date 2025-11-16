@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
-import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2 } from "lucide-react";
+import { Calendar, Clock, DollarSign, User, TrendingUp, Settings, Building2, ChevronDown, MapPin } from "lucide-react";
 import BookingCard from "@/components/BookingCard";
 import BottomNav from "@/components/BottomNav";
 import BreakButton from "@/components/BreakButton";
 import { ActiveJobsIndicator } from "@/components/ActiveJobsIndicator";
 import { HandoffNotifications } from "@/components/HandoffNotifications";
 import { AvailabilityStatusToggle } from "@/components/AvailabilityStatusToggle";
-import { BranchSwitcher } from "@/components/BranchSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useBranch } from "@/contexts/BranchContext";
@@ -29,7 +36,7 @@ interface Booking {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { selectedBranch } = useBranch();
+  const { selectedBranch, setSelectedBranch } = useBranch();
   const { branches } = useUserBranches();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,6 +147,15 @@ const Dashboard = () => {
     }
   };
 
+  const handleBranchChange = (branch: any) => {
+    setSelectedBranch(branch);
+    toast({
+      title: "Branch Changed",
+      description: `Switched to ${branch.name}`,
+    });
+    window.location.reload();
+  };
+
   const stats = [
     { label: "Today's Jobs", value: "4", icon: Calendar, gradient: "gradient-primary" },
     { label: "Hours Worked", value: "5.5h", icon: Clock, gradient: "gradient-secondary" },
@@ -151,18 +167,9 @@ const Dashboard = () => {
       {/* Header */}
       <div className="gradient-primary text-white p-6 pb-8 rounded-b-[2rem]">
         <div className="flex items-center justify-between mb-6">
-          <div>
+          <div className="flex-1">
             <h2 className="text-xl font-bold">Welcome back!</h2>
             <p className="text-white/80 text-sm">Ready to start your day?</p>
-            {selectedBranch && (
-              <div className="flex items-center gap-2 mt-2 text-sm">
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: selectedBranch.color_theme || "#fff" }}
-                />
-                <span className="text-white/90">{selectedBranch.name}</span>
-              </div>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <AvailabilityStatusToggle />
@@ -171,6 +178,87 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Branch Indicator Card */}
+        {selectedBranch && (
+          <Card className="glass-card border-white/20 p-4 mb-6 animate-slide-up">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: selectedBranch.color_theme || "#6366f1" }}
+                >
+                  <Building2 className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-white font-semibold truncate">
+                      {selectedBranch.name}
+                    </p>
+                    {selectedBranch.is_active && (
+                      <Badge variant="secondary" className="bg-success/20 text-success border-success/30 text-xs">
+                        Active
+                      </Badge>
+                    )}
+                  </div>
+                  {selectedBranch.address && (
+                    <div className="flex items-center gap-1 text-white/70 text-xs">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">{selectedBranch.address}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {branches.length > 1 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20 ml-2 flex-shrink-0"
+                    >
+                      Switch
+                      <ChevronDown className="w-4 h-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[280px]">
+                    <div className="px-2 py-1.5">
+                      <p className="text-xs font-medium text-muted-foreground">Switch Branch</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    {branches.map((branch) => (
+                      <DropdownMenuItem
+                        key={branch.id}
+                        onClick={() => handleBranchChange(branch)}
+                        className="cursor-pointer py-3"
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: branch.color_theme || "#6366f1" }}
+                          >
+                            <Building2 className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">{branch.name}</div>
+                            {branch.address && (
+                              <div className="text-xs text-muted-foreground truncate">
+                                {branch.address}
+                              </div>
+                            )}
+                          </div>
+                          {selectedBranch?.id === branch.id && (
+                            <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-3">
@@ -192,12 +280,6 @@ const Dashboard = () => {
 
       {/* Today's Schedule */}
       <div className="p-6">
-        {branches.length > 1 && (
-          <div className="mb-6">
-            <BranchSwitcher />
-          </div>
-        )}
-
         {/* Break Button */}
         <div className="mb-6 animate-slide-up">
           <BreakButton isOnBreak={false} />
