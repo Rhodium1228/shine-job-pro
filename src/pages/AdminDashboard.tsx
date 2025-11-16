@@ -134,7 +134,7 @@ const AdminDashboard = () => {
       .eq("status", "completed");
 
     const totalEarnings = bookingsData?.reduce((sum, booking) => {
-      return sum + parseFloat(booking.price.replace(/[^0-9.-]+/g, ""));
+      return sum + Number(booking.price);
     }, 0) || 0;
 
     // Fetch cancellations
@@ -188,7 +188,7 @@ const AdminDashboard = () => {
     bookingsData?.forEach(booking => {
       const date = format(new Date(booking.booking_time), "MMM dd");
       const existing = trendMap.get(date) || { bookings: 0, revenue: 0 };
-      const price = parseFloat(booking.price.replace(/[^0-9.-]+/g, ""));
+      const price = Number(booking.price);
       
       trendMap.set(date, {
         bookings: existing.bookings + 1,
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
         const bookings = bookingsData?.length || 0;
         const revenue = bookingsData?.reduce((sum, b) => {
           if (b.status === "completed") {
-            return sum + parseFloat(b.price.replace(/[^0-9.-]+/g, ""));
+            return sum + Number(b.price);
           }
           return sum;
         }, 0) || 0;

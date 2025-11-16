@@ -15,7 +15,7 @@ const bookingSchema = z.object({
   service: z.string().trim().min(1, { message: "Service is required" }).max(200),
   booking_time: z.string().min(1, { message: "Date and time are required" }),
   duration: z.string().trim().min(1, { message: "Duration is required" }).max(50),
-  price: z.string().trim().min(1, { message: "Price is required" }).max(20),
+  price: z.number().positive({ message: "Price must be a positive number" }),
   status: z.enum(["pending", "accepted"]),
   client_phone: z.string().trim().max(50).optional(),
   client_email: z.string().trim().email({ message: "Invalid email" }).max(255).optional().or(z.literal("")),
@@ -36,7 +36,7 @@ interface Booking {
   service: string;
   booking_time: string;
   duration: string;
-  price: string;
+  price: number;
   status: string;
   client_phone?: string | null;
   client_email?: string | null;
@@ -67,7 +67,7 @@ export const BookingManagementDialog = ({
     service: "",
     booking_time: "",
     duration: "60 min",
-    price: "",
+    price: "0",
     status: "pending",
     client_phone: "",
     client_email: "",
@@ -116,7 +116,7 @@ export const BookingManagementDialog = ({
         service: booking.service,
         booking_time: booking.booking_time.slice(0, 16),
         duration: booking.duration,
-        price: booking.price,
+        price: String(booking.price),
         status: booking.status,
         client_phone: booking.client_phone || "",
         client_email: booking.client_email || "",
@@ -130,7 +130,7 @@ export const BookingManagementDialog = ({
         service: "",
         booking_time: "",
         duration: "60 min",
-        price: "",
+        price: "0",
         status: "pending",
         client_phone: "",
         client_email: "",
@@ -145,7 +145,10 @@ export const BookingManagementDialog = ({
     setLoading(true);
 
     try {
-      const validated = bookingSchema.parse(formData);
+      const validated = bookingSchema.parse({
+        ...formData,
+        price: parseFloat(formData.price) || 0,
+      });
 
       const bookingData = {
         staff_id: validated.staff_id,

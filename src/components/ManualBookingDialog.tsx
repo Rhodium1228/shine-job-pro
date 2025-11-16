@@ -39,7 +39,7 @@ export const ManualBookingDialog = ({ open, onOpenChange, onSuccess }: ManualBoo
     branch_id: "",
     booking_time: "",
     duration: "60 minutes",
-    price: "",
+    price: "0",
     notes: "",
   });
 
@@ -84,7 +84,7 @@ export const ManualBookingDialog = ({ open, onOpenChange, onSuccess }: ManualBoo
         branch_id: formData.branch_id || null,
         booking_time: new Date(formData.booking_time).toISOString(),
         duration: formData.duration,
-        price: formData.price,
+        price: parseFloat(formData.price) || 0,
         notes: formData.notes || null,
         status: "confirmed",
       });

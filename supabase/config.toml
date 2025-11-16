@@ -48,5 +48,8 @@ verify_jwt = false
 [functions.api-v1-admin-staff-delete]
 verify_jwt = false
 
-[functions.send-staff-invitation]
+[functions.api-v1-admin-analytics]
+verify_jwt = false
+
+[functions.api-v1-admin-loyalty-config]
 verify_jwt = false

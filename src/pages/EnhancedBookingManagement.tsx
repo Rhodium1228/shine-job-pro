@@ -55,7 +55,7 @@ interface Booking {
   service: string;
   booking_time: string;
   duration: string;
-  price: string;
+  price: number;
   status: string;
   client_phone?: string | null;
   client_email?: string | null;
