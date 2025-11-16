@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_jobs: {
+        Row: {
+          booking_id: string
+          client_name: string
+          completed_at: string | null
+          created_at: string | null
+          duration: string
+          id: string
+          paused_at: string | null
+          price: string
+          service: string
+          staff_id: string
+          started_at: string
+          status: string
+          total_paused_seconds: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          booking_id: string
+          client_name: string
+          completed_at?: string | null
+          created_at?: string | null
+          duration: string
+          id?: string
+          paused_at?: string | null
+          price: string
+          service: string
+          staff_id: string
+          started_at?: string
+          status?: string
+          total_paused_seconds?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          booking_id?: string
+          client_name?: string
+          completed_at?: string | null
+          created_at?: string | null
+          duration?: string
+          id?: string
+          paused_at?: string | null
+          price?: string
+          service?: string
+          staff_id?: string
+          started_at?: string
+          status?: string
+          total_paused_seconds?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      break_sessions: {
+        Row: {
+          break_duration_minutes: number
+          created_at: string | null
+          ends_at: string
+          id: string
+          staff_id: string
+          started_at: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          break_duration_minutes: number
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          staff_id: string
+          started_at?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          break_duration_minutes?: number
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          staff_id?: string
+          started_at?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
