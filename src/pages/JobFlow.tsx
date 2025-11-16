@@ -19,6 +19,7 @@ import {
   calculateElapsedTime,
   type ActiveJob,
 } from "@/utils/timeSync";
+import { setStatusToBusyOnJobStart, setStatusToAvailableOnLastJobComplete } from "@/utils/availabilitySync";
 
 const JobFlow = () => {
   const navigate = useNavigate();
@@ -138,28 +139,29 @@ const JobFlow = () => {
   };
 
   const handleStart = async () => {
-    playStartSound();
-    setLoading(true);
-    
-    const job = await startJob(
-      bookingData.id,
-      bookingData.clientName,
-      bookingData.service,
-      bookingData.price,
-      bookingData.duration,
-      selectedBranch?.id
-    );
-    
-    if (job) {
+    try {
+      playStartSound();
+      
+      // Set status to busy before starting job
+      await setStatusToBusyOnJobStart();
+      
+      const job = await startJob(
+        bookingData.id,
+        bookingData.clientName,
+        bookingData.service,
+        bookingData.duration,
+        bookingData.price,
+        selectedBranch?.id
+      );
+      
       setActiveJobData(job);
-      setJobStatus("active");
-      await updateAvailabilityStatus('busy');
-      toast.success("Job started! 🚀");
-    } else {
+      setJobStatus('active');
+      
+      toast.success("Job started successfully! Timer is now running.");
+    } catch (error) {
+      console.error('Error starting job:', error);
       toast.error("Failed to start job");
     }
-    
-    setLoading(false);
   };
 
   const handlePauseResume = async () => {
@@ -207,20 +209,24 @@ const JobFlow = () => {
   const handleComplete = async () => {
     if (!activeJobData) return;
     
-    setLoading(true);
-    const success = await completeJob(activeJobData.id);
-    
-    if (success) {
+    try {
       playCompleteSound();
-      setJobStatus("completed");
-      await updateAvailabilityStatus('available');
-      toast.success("Job completed! Great work! 🎉");
+      
+      await completeJob(activeJobData.id);
+      
+      // Update status to available if this was the last job
+      await setStatusToAvailableOnLastJobComplete();
+      
+      setJobStatus('completed');
+      toast.success("Job completed successfully! 🎉");
+      
+      // Navigate back to dashboard after a short delay
       setTimeout(() => {
         navigate("/dashboard");
-      }, 2000);
-    } else {
+      }, 1500);
+    } catch (error) {
+      console.error('Error completing job:', error);
       toast.error("Failed to complete job");
-      setLoading(false);
     }
   };
 

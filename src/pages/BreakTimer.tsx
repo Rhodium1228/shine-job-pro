@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { handleStatusChange, getAutoPausedJobs } from "@/utils/availabilitySync";
 
 interface Break {
   id: string;
@@ -20,6 +21,7 @@ const BreakTimer = () => {
   const [currentBreakTime, setCurrentBreakTime] = useState(0);
   const [totalBreakTime, setTotalBreakTime] = useState(0);
   const [breaks, setBreaks] = useState<Break[]>([]);
+  const [pausedJobsCount, setPausedJobsCount] = useState(0);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -73,10 +75,21 @@ const BreakTimer = () => {
   };
 
   const handleStartBreak = async () => {
-    setIsOnBreak(true);
-    setCurrentBreakTime(0);
-    await updateAvailabilityStatus('on_break');
-    toast.success("Break started - enjoy your rest! ☕");
+    const result = await handleStatusChange('on_break');
+    
+    if (result.success) {
+      setIsOnBreak(true);
+      setCurrentBreakTime(0);
+      setPausedJobsCount(result.jobsAffected);
+      
+      if (result.jobsAffected > 0) {
+        toast.success(`Break started - ${result.message} ☕`);
+      } else {
+        toast.success("Break started - enjoy your rest! ☕");
+      }
+    } else {
+      toast.error("Failed to start break");
+    }
   };
 
   const handleEndBreak = async () => {
@@ -89,10 +102,25 @@ const BreakTimer = () => {
 
     setBreaks((prev) => [...prev, newBreak]);
     setTotalBreakTime((prev) => prev + currentBreakTime);
+    
+    // Check if there are jobs to resume
+    const autoPausedIds = getAutoPausedJobs();
+    
+    if (autoPausedIds.length > 0) {
+      const result = await handleStatusChange('available', 'on_break');
+      if (result.success && result.jobsAffected > 0) {
+        toast.success(`Break ended - ${result.message}!`);
+      } else {
+        toast.success("Break ended - welcome back!");
+      }
+    } else {
+      await updateAvailabilityStatus('available');
+      toast.success("Break ended - welcome back!");
+    }
+    
     setIsOnBreak(false);
     setCurrentBreakTime(0);
-    await updateAvailabilityStatus('available');
-    toast.success("Break ended - welcome back!");
+    setPausedJobsCount(0);
   };
 
   const handleBack = async () => {
@@ -123,6 +151,14 @@ const BreakTimer = () => {
 
         {/* Daily Summary Card */}
         <div className="glass-card rounded-2xl p-5 animate-slide-up">
+          {pausedJobsCount > 0 && isOnBreak && (
+            <div className="mb-4 p-3 bg-warning/20 rounded-lg border border-warning/30">
+              <p className="text-sm text-white flex items-center gap-2">
+                <Coffee className="w-4 h-4" />
+                {pausedJobsCount} job{pausedJobsCount !== 1 ? 's' : ''} paused and waiting
+              </p>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Coffee className="w-5 h-5" />

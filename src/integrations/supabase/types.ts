@@ -23,6 +23,7 @@ export type Database = {
           created_at: string | null
           duration: string
           id: string
+          pause_reason: string | null
           paused_at: string | null
           price: string
           service: string
@@ -40,6 +41,7 @@ export type Database = {
           created_at?: string | null
           duration: string
           id?: string
+          pause_reason?: string | null
           paused_at?: string | null
           price: string
           service: string
@@ -57,6 +59,7 @@ export type Database = {
           created_at?: string | null
           duration?: string
           id?: string
+          pause_reason?: string | null
           paused_at?: string | null
           price?: string
           service?: string

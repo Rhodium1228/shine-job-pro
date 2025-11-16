@@ -17,9 +17,10 @@ interface BookingCardProps {
   };
   onAccept: (id: string) => void;
   onDecline: (id: string) => void;
+  disableStart?: boolean;
 }
 
-const BookingCard = ({ booking, onAccept, onDecline }: BookingCardProps) => {
+const BookingCard = ({ booking, onAccept, onDecline, disableStart = false }: BookingCardProps) => {
   const navigate = useNavigate();
 
   const handleAccept = () => {
@@ -116,6 +117,8 @@ const BookingCard = ({ booking, onAccept, onDecline }: BookingCardProps) => {
           onClick={handleStartJob}
           variant="primary" 
           className="w-full h-11"
+          disabled={disableStart}
+          title={disableStart ? "Change your status to start jobs" : ""}
         >
           Start Job
         </GradientButton>

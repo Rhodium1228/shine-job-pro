@@ -19,6 +19,7 @@ export interface ActiveJob {
   status: 'active' | 'paused' | 'completed';
   completed_at: string | null;
   branch_id?: string | null;
+  pause_reason?: 'manual' | 'auto_break' | 'auto_offline';
 }
 
 export interface BreakSession {
