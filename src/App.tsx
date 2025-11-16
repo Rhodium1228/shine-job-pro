@@ -16,33 +16,38 @@ import ProfilePage from "./pages/ProfilePage";
 import ACSUWallet from "./pages/ACSUWallet";
 import BookingManagement from "./pages/BookingManagement";
 import BranchManagement from "./pages/BranchManagement";
+import BranchSelector from "./pages/BranchSelector";
+import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/job-flow" element={<ProtectedRoute><JobFlow /></ProtectedRoute>} />
-          <Route path="/break-timer" element={<ProtectedRoute><BreakTimer /></ProtectedRoute>} />
-          <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
-          <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
-          <Route path="/booking-management" element={<ProtectedRoute><BookingManagement /></ProtectedRoute>} />
-          <Route path="/branch-management" element={<ProtectedRoute><BranchManagement /></ProtectedRoute>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <BranchProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/job-flow" element={<ProtectedRoute><JobFlow /></ProtectedRoute>} />
+            <Route path="/break-timer" element={<ProtectedRoute><BreakTimer /></ProtectedRoute>} />
+            <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
+            <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
+            <Route path="/booking-management" element={<ProtectedRoute><BookingManagement /></ProtectedRoute>} />
+            <Route path="/branch-management" element={<ProtectedRoute><BranchManagement /></ProtectedRoute>} />
+            <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </BranchProvider>
   </QueryClientProvider>
 );
 
