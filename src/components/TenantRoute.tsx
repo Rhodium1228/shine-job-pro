@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useTenantContext } from "@/contexts/TenantContext";
 
 interface TenantRouteProps {
   children: React.ReactNode;
@@ -12,32 +11,24 @@ interface TenantRouteProps {
  * 
  * Security Rules:
  * 1. Extracts salonId from URL params
- * 2. Validates user has access to that salon via staff_salons table
+ * 2. Validates user has access to that salon via TenantContext
  * 3. Super admins bypass validation and can access any salon
  * 4. Redirects unauthorized users to branch selector
  */
 const TenantRoute = ({ children }: TenantRouteProps) => {
   const navigate = useNavigate();
   const { salonId } = useParams<{ salonId: string }>();
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { userId, role, loading: contextLoading, validateTenantAccess } = useTenantContext();
   const [validating, setValidating] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
-    const validateTenantAccess = async () => {
-      if (roleLoading) return;
+    const validateAccess = async () => {
+      if (contextLoading) return;
 
       try {
-        // Super admin bypass - can access any salon
-        if (isAdmin) {
-          setHasAccess(true);
-          setValidating(false);
-          return;
-        }
-
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        // User not authenticated
+        if (!userId) {
           navigate('/auth');
           return;
         }
@@ -48,27 +39,25 @@ const TenantRoute = ({ children }: TenantRouteProps) => {
           return;
         }
 
-        // Check if user has access to this salon
-        const { data: staffSalon, error } = await supabase
-          .from("staff_salons")
-          .select("salon_id")
-          .eq("staff_id", user.id)
-          .eq("salon_id", salonId)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Error validating tenant access:", error);
-          navigate('/branch-selector');
+        // Super admin bypass - can access any salon
+        if (role === "super_admin") {
+          console.log(`Super admin ${userId} accessing salon ${salonId}`);
+          setHasAccess(true);
+          setValidating(false);
           return;
         }
 
-        if (!staffSalon) {
-          console.warn(`User ${user.id} attempted to access unauthorized salon ${salonId}`);
+        // Validate tenant access using context
+        const validation = await validateTenantAccess(salonId);
+
+        if (!validation.isValid) {
+          console.warn(`User ${userId} attempted to access unauthorized salon ${salonId}`);
           navigate('/branch-selector');
           return;
         }
 
         // User has access
+        console.log(`User ${userId} validated for salon ${salonId}`);
         setHasAccess(true);
       } catch (error) {
         console.error("Error in tenant validation:", error);
@@ -78,10 +67,10 @@ const TenantRoute = ({ children }: TenantRouteProps) => {
       }
     };
 
-    validateTenantAccess();
-  }, [salonId, isAdmin, roleLoading, navigate]);
+    validateAccess();
+  }, [salonId, userId, role, contextLoading, validateTenantAccess, navigate]);
 
-  if (roleLoading || validating) {
+  if (contextLoading || validating) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">

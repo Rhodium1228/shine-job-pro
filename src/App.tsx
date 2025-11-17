@@ -26,6 +26,7 @@ import CustomerFeedback from "./pages/CustomerFeedback";
 import StaffInvite from "./pages/StaffInvite";
 import StaffOnboarding from "./pages/StaffOnboarding";
 import { BranchProvider } from "./contexts/BranchContext";
+import { TenantProvider } from "./contexts/TenantContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import TenantRoute from "./components/TenantRoute";
@@ -35,8 +36,9 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BranchProvider>
-      <TooltipProvider>
+    <TenantProvider>
+      <BranchProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -102,6 +104,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </BranchProvider>
+    </TenantProvider>
   </QueryClientProvider>
 );
 
