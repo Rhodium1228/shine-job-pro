@@ -116,7 +116,8 @@ export const TenantProvider = ({ children }: TenantProviderProps) => {
     }
 
     // Super admin bypass - can access any salon
-    if (role === "super_admin") {
+    const isSuperAdmin = role === "super_admin";
+    if (isSuperAdmin) {
       return {
         isValid: true,
         salonId: requestedSalonId,
@@ -135,16 +136,16 @@ export const TenantProvider = ({ children }: TenantProviderProps) => {
       .maybeSingle();
 
     const hasAccess = !!staffSalon;
+    const isAdmin = role === "admin" || role === "salon_owner";
 
     return {
       isValid: hasAccess,
       salonId: hasAccess ? requestedSalonId : salonId,
       canAccessSalon: (checkSalonId: string) => {
-        if (role === "super_admin") return true;
         return checkSalonId === requestedSalonId && hasAccess;
       },
       isSuperAdmin: false,
-      isAdmin: role === "admin" || role === "salon_owner",
+      isAdmin,
     };
   };
 
@@ -219,8 +220,6 @@ export const useIsSuperAdmin = () => {
  */
 export const useIsAdmin = () => {
   const { role, loading } = useTenantContext();
-  return { 
-    isAdmin: role === "admin" || role === "salon_owner" || role === "super_admin", 
-    loading 
-  };
+  const isAdmin = role === "admin" || role === "salon_owner" || role === "super_admin";
+  return { isAdmin, loading };
 };
