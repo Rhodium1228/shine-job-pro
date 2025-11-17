@@ -1,18 +1,20 @@
 import { Home, Calendar, DollarSign, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { salonId } = useParams<{ salonId: string }>();
 
   const getActiveTab = () => {
-    if (location.pathname === "/dashboard") return "home";
-    if (location.pathname === "/calendar") return "schedule";
-    if (location.pathname === "/acsu-wallet") return "wallet";
-    if (location.pathname === "/earnings") return "earnings";
-    if (location.pathname === "/profile") return "profile";
+    const path = location.pathname;
+    if (path.endsWith("/dashboard")) return "home";
+    if (path.endsWith("/calendar")) return "schedule";
+    if (path.endsWith("/acsu-wallet")) return "wallet";
+    if (path.endsWith("/earnings")) return "earnings";
+    if (path.endsWith("/profile")) return "profile";
     return "home";
   };
 
@@ -20,15 +22,17 @@ const BottomNav = () => {
 
   const handleNavClick = (id: string, path: string) => {
     setActive(id);
-    navigate(path);
+    // Build tenant-scoped path
+    const tenantPath = salonId ? `/app/${salonId}/${path}` : `/branch-selector`;
+    navigate(tenantPath);
   };
 
   const navItems = [
-    { id: "home", icon: Home, label: "Home", path: "/dashboard" },
-    { id: "schedule", icon: Calendar, label: "Schedule", path: "/calendar" },
-    { id: "wallet", icon: Wallet, label: "Wallet", path: "/acsu-wallet" },
-    { id: "earnings", icon: DollarSign, label: "Earnings", path: "/earnings" },
-    { id: "profile", icon: User, label: "Profile", path: "/profile" },
+    { id: "home", icon: Home, label: "Home", path: "dashboard" },
+    { id: "schedule", icon: Calendar, label: "Schedule", path: "calendar" },
+    { id: "wallet", icon: Wallet, label: "Wallet", path: "acsu-wallet" },
+    { id: "earnings", icon: DollarSign, label: "Earnings", path: "earnings" },
+    { id: "profile", icon: User, label: "Profile", path: "profile" },
   ];
 
   return (

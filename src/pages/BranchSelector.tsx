@@ -19,7 +19,7 @@ const BranchSelector = () => {
     // If user has only one branch, auto-select it
     if (!loading && branches.length === 1) {
       setSelectedBranch(branches[0]);
-      navigate("/dashboard");
+      navigate(`/app/${branches[0].id}/dashboard`);
     }
   }, [branches, loading, setSelectedBranch, navigate]);
 
@@ -29,7 +29,8 @@ const BranchSelector = () => {
       title: "Branch Selected",
       description: `You are now working at ${branch.name}`,
     });
-    navigate("/dashboard");
+    // Navigate to tenant-scoped dashboard
+    navigate(`/app/${branch.id}/dashboard`);
   };
 
   const handleLogout = async () => {
