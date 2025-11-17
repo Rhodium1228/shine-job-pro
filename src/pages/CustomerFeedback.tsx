@@ -36,7 +36,7 @@ export default function CustomerFeedback() {
           staff:profiles!customer_reviews_staff_id_fkey(full_name),
           responder:profiles!customer_reviews_responded_by_fkey(full_name)
         `)
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .order('created_at', { ascending: false });
 
       if (filterRating !== 'all') {
@@ -66,7 +66,7 @@ export default function CustomerFeedback() {
           *,
           staff:profiles!feedback_surveys_staff_id_fkey(full_name)
         `)
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;

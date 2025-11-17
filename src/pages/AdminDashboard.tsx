@@ -167,7 +167,7 @@ const AdminDashboard = () => {
           const { data: bookingsData } = await supabase
             .from("bookings")
             .select("price, status")
-            .eq("branch_id", branch.id)
+            .eq("salon_id", branch.id)
             .gte("booking_time", startDate.toISOString())
             .lte("booking_time", endDate.toISOString());
 

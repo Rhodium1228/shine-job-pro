@@ -71,7 +71,7 @@ export function PostServiceSurvey({
       // Submit review
       const { error: reviewError } = await supabase.from('customer_reviews').insert({
         booking_id: bookingId,
-        branch_id: branchId,
+        salon_id: branchId,
         customer_name: customerName,
         customer_email: customerEmail,
         staff_id: staffId,
@@ -88,7 +88,7 @@ export function PostServiceSurvey({
       // Submit detailed survey
       const { error: surveyError } = await supabase.from('feedback_surveys').insert({
         booking_id: bookingId,
-        branch_id: branchId,
+        salon_id: branchId,
         customer_name: customerName,
         customer_email: customerEmail,
         staff_id: staffId,

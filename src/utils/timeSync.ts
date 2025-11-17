@@ -7,19 +7,19 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface ActiveJob {
   id: string;
-  staff_id: string;
   booking_id: string;
+  staff_id: string;
   client_name: string;
   service: string;
   price: number;
   duration: string;
+  salon_id?: string | null;
+  status: 'active' | 'paused' | 'completed';
   started_at: string;
   paused_at: string | null;
-  total_paused_seconds: number;
-  status: 'active' | 'paused' | 'completed';
   completed_at: string | null;
-  branch_id?: string | null;
-  pause_reason?: 'manual' | 'auto_break' | 'auto_offline';
+  total_paused_seconds: number | null;
+  pause_reason?: string | null;
 }
 
 export interface BreakSession {

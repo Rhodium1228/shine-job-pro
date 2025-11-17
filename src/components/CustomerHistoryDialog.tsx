@@ -67,7 +67,7 @@ export const CustomerHistoryDialog = ({
           price,
           duration,
           profiles:staff_id (full_name),
-          branches:branch_id (name)
+          branches:salon_id (name)
         `)
         .eq("client_name", customerName)
         .order("booking_time", { ascending: false })

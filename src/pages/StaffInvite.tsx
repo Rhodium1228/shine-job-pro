@@ -29,9 +29,9 @@ export default function StaffInvite() {
         .select(`
           *,
           inviter:profiles!staff_invitations_invited_by_fkey(full_name),
-          branch:branches(name)
+          salon:salons(name)
         `)
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -48,7 +48,7 @@ export default function StaffInvite() {
         .select(`
           *,
           profile:profiles!staff_onboarding_user_id_fkey(full_name, email, avatar_url),
-          invitation:staff_invitations(branch_id, assigned_role)
+          invitation:staff_invitations(salon_id, assigned_role)
         `)
         .in('onboarding_status', ['pending_approval'])
         .order('created_at', { ascending: false });
