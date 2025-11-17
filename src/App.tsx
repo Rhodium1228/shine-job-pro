@@ -28,6 +28,7 @@ import StaffOnboarding from "./pages/StaffOnboarding";
 import { BranchProvider } from "./contexts/BranchContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import TenantRoute from "./components/TenantRoute";
 import { AdminLayout } from "./components/AdminLayout";
 
 const queryClient = new QueryClient();
@@ -40,27 +41,62 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Login />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/job-flow" element={<ProtectedRoute><JobFlow /></ProtectedRoute>} />
-            <Route path="/break-timer" element={<ProtectedRoute><BreakTimer /></ProtectedRoute>} />
-            <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
-            <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/acsu-wallet" element={<ProtectedRoute><ACSUWallet /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><AdminDashboard /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/staff-management" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><StaffManagement /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/booking-management" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><EnhancedBookingManagement /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/branch-management" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><BranchManagement /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
+            
+            {/* Branch/Salon Selector (Pre-Tenant Selection) */}
             <Route path="/branch-selector" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
-            <Route path="/availability-report" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><AvailabilityReport /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/loyalty-config" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><ACSULoyaltyConfig /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/reports-analytics" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><ReportsAnalytics /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/customer-feedback" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><CustomerFeedback /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/staff-invite" element={<ProtectedRoute><ProtectedAdminRoute><AdminLayout><StaffInvite /></AdminLayout></ProtectedAdminRoute></ProtectedRoute>} />
-            <Route path="/onboarding" element={<ProtectedRoute><StaffOnboarding /></ProtectedRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            
+            {/* Tenant-Scoped Routes: /app/{salonId}/... */}
+            <Route path="/app/:salonId/*" element={
+              <ProtectedRoute>
+                <TenantRoute>
+                  <Routes>
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="job-flow" element={<JobFlow />} />
+                    <Route path="break-timer" element={<BreakTimer />} />
+                    <Route path="calendar" element={<CalendarView />} />
+                    <Route path="earnings" element={<EarningsPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="acsu-wallet" element={<ACSUWallet />} />
+                    <Route path="onboarding" element={<StaffOnboarding />} />
+                    
+                    {/* Admin Routes within Tenant Context */}
+                    <Route path="admin" element={<ProtectedAdminRoute><AdminLayout><AdminDashboard /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="staff-management" element={<ProtectedAdminRoute><AdminLayout><StaffManagement /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="booking-management" element={<ProtectedAdminRoute><AdminLayout><EnhancedBookingManagement /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="branch-management" element={<ProtectedAdminRoute><AdminLayout><BranchManagement /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="availability-report" element={<ProtectedAdminRoute><AdminLayout><AvailabilityReport /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="loyalty-config" element={<ProtectedAdminRoute><AdminLayout><ACSULoyaltyConfig /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="reports-analytics" element={<ProtectedAdminRoute><AdminLayout><ReportsAnalytics /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="customer-feedback" element={<ProtectedAdminRoute><AdminLayout><CustomerFeedback /></AdminLayout></ProtectedAdminRoute>} />
+                    <Route path="staff-invite" element={<ProtectedAdminRoute><AdminLayout><StaffInvite /></AdminLayout></ProtectedAdminRoute>} />
+                  </Routes>
+                </TenantRoute>
+              </ProtectedRoute>
+            } />
+
+            {/* Legacy Routes - Redirect to branch selector */}
+            <Route path="/dashboard" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/job-flow" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/break-timer" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/calendar" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/earnings" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/acsu-wallet" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/staff-management" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/booking-management" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/branch-management" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/availability-report" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/loyalty-config" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/reports-analytics" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/customer-feedback" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/staff-invite" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><BranchSelector /></ProtectedRoute>} />
+            
+            {/* 404 Catch-All */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

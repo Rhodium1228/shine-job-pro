@@ -10,7 +10,7 @@ import {
   Clock
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -23,30 +23,33 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const adminItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Staff Management", url: "/staff-management", icon: Users },
-  { title: "Bookings", url: "/booking-management", icon: Calendar },
-  { title: "Branches", url: "/branch-management", icon: Building2 },
-  { title: "Availability", url: "/availability-report", icon: Clock },
-  { title: "Reports & Analytics", url: "/reports-analytics", icon: BarChart3 },
-  { title: "Loyalty Config", url: "/loyalty-config", icon: Gift },
-  { title: "Customer Feedback", url: "/customer-feedback", icon: MessageSquare },
-  { title: "Invite Staff", url: "/staff-invite", icon: UserPlus },
+const adminItemsBase = [
+  { title: "Dashboard", path: "admin", icon: LayoutDashboard },
+  { title: "Staff Management", path: "staff-management", icon: Users },
+  { title: "Bookings", path: "booking-management", icon: Calendar },
+  { title: "Branches", path: "branch-management", icon: Building2 },
+  { title: "Availability", path: "availability-report", icon: Clock },
+  { title: "Reports & Analytics", path: "reports-analytics", icon: BarChart3 },
+  { title: "Loyalty Config", path: "loyalty-config", icon: Gift },
+  { title: "Customer Feedback", path: "customer-feedback", icon: MessageSquare },
+  { title: "Invite Staff", path: "staff-invite", icon: UserPlus },
 ];
 
 export function AdminSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const currentPath = location.pathname;
+  const { salonId } = useParams<{ salonId: string }>();
   
   const collapsed = state === "collapsed";
 
+  // Build tenant-scoped URLs
+  const adminItems = adminItemsBase.map(item => ({
+    ...item,
+    url: `/app/${salonId}/${item.path}`
+  }));
+
   const isActive = (path: string) => {
-    if (path === '/admin') {
-      return currentPath === path;
-    }
-    return currentPath.startsWith(path);
+    return location.pathname === path || location.pathname.startsWith(path);
   };
 
   return (
@@ -67,7 +70,6 @@ export function AdminSidebar() {
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink 
                       to={item.url} 
-                      end={item.url === '/admin'}
                       className="hover:bg-accent hover:text-accent-foreground"
                       activeClassName="bg-accent text-accent-foreground font-medium"
                     >
