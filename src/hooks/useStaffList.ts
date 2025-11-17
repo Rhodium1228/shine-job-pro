@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useTenant } from '@/contexts/TenantContext';
 
 export interface StaffMember {
   id: string;
@@ -12,35 +11,27 @@ export interface StaffMember {
   specialties: string[] | null;
   is_suspended: boolean | null;
   availability_status: string | null;
-  default_salon_id: string | null;
-  salon_id: string | null;
+  default_branch_id: string | null;
   rating: number | null;
   total_reviews: number | null;
 }
 
 interface UseStaffListOptions {
-  salonId?: string;
+  branchId?: string;
   availabilityStatus?: string;
   includeRoles?: boolean;
+  includeBranches?: boolean;
   enabled?: boolean;
 }
 
 export const useStaffList = (options: UseStaffListOptions = {}) => {
-  const { salonId: contextSalonId, isSuperAdmin } = useTenant();
-  const targetSalonId = options.salonId || contextSalonId;
-
   return useQuery({
-    queryKey: ['staff', targetSalonId, options],
+    queryKey: ['staff', options],
     queryFn: async () => {
       let query = supabase
         .from('profiles')
-        .select('id, full_name, email, phone, avatar_url, hourly_rate, specialties, is_suspended, availability_status, default_salon_id, salon_id, rating, total_reviews')
+        .select('id, full_name, email, phone, avatar_url, hourly_rate, specialties, is_suspended, availability_status, default_branch_id, rating, total_reviews')
         .order('full_name', { ascending: true });
-
-      // Tenant isolation - only show staff from user's salon unless super admin
-      if (!isSuperAdmin && targetSalonId) {
-        query = query.eq('salon_id', targetSalonId);
-      }
 
       if (options.availabilityStatus) {
         query = query.eq('availability_status', options.availabilityStatus);
@@ -52,7 +43,20 @@ export const useStaffList = (options: UseStaffListOptions = {}) => {
         throw new Error(`Failed to fetch staff: ${error.message}`);
       }
 
-      return (data || []) as StaffMember[];
+      let filteredData = data || [];
+
+      // Client-side filter by branch if needed
+      if (options.branchId && filteredData.length > 0) {
+        const { data: branchStaff } = await supabase
+          .from('staff_branches')
+          .select('staff_id')
+          .eq('branch_id', options.branchId);
+
+        const staffIds = new Set(branchStaff?.map(sb => sb.staff_id) || []);
+        filteredData = filteredData.filter(staff => staffIds.has(staff.id));
+      }
+
+      return filteredData as StaffMember[];
     },
     enabled: options.enabled !== false,
   });

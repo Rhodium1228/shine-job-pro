@@ -20,7 +20,7 @@ const bookingSchema = z.object({
   client_phone: z.string().trim().max(50).optional(),
   client_email: z.string().trim().email({ message: "Invalid email" }).max(255).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional(),
-  salon_id: z.string().optional(),
+  branch_id: z.string().optional(),
 });
 
 interface Staff {
@@ -41,7 +41,7 @@ interface Booking {
   client_phone?: string | null;
   client_email?: string | null;
   notes?: string | null;
-  salon_id?: string | null;
+  branch_id?: string | null;
 }
 
 interface BookingManagementDialogProps {
@@ -72,14 +72,14 @@ export const BookingManagementDialog = ({
     client_phone: "",
     client_email: "",
     notes: "",
-    salon_id: "",
+    branch_id: "",
   });
 
   useEffect(() => {
-  const fetchSalons = async () => {
+  const fetchBranches = async () => {
     try {
       const { data, error } = await supabase
-        .from("salons")
+        .from("branches")
         .select("id, name")
         .eq("is_active", true)
         .order("name");
