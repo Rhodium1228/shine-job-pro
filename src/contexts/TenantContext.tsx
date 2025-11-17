@@ -1,7 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { TenantContext as TenantContextType, UserRole, TenantValidation } from "@/types/tenant";
+import { TenantContext as TenantContextType, TenantValidation } from "@/types/tenant";
+import { Database } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
+
+// Use database enum type for role
+type AppRole = Database["public"]["Enums"]["app_role"];
 
 interface TenantProviderProps {
   children: ReactNode;
@@ -54,14 +58,14 @@ export const TenantProvider = ({ children }: TenantProviderProps) => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      const role = roleData?.role as UserRole | null;
+      const userRole: AppRole | null = roleData?.role || null;
 
       // For super admins, no need to fetch salon_id
-      if (role === "super_admin") {
+      if (userRole === "super_admin") {
         return {
           userId: user.id,
           salonId: null,
-          role: "super_admin",
+          role: userRole,
           email: user.email || null,
           fullName: user.user_metadata?.full_name || null,
           loading: false,
@@ -80,7 +84,7 @@ export const TenantProvider = ({ children }: TenantProviderProps) => {
       return {
         userId: user.id,
         salonId,
-        role: role || "staff",
+        role: userRole || "staff",
         email: user.email || null,
         fullName: profileData?.full_name || user.user_metadata?.full_name || null,
         loading: false,

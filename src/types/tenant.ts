@@ -1,3 +1,5 @@
+import { Database } from "@/integrations/supabase/types";
+
 /**
  * Multi-Tenant Type Definitions
  * 
@@ -5,9 +7,9 @@
  */
 
 /**
- * User roles in the multi-tenant system
+ * User roles in the multi-tenant system (using database enum)
  */
-export type UserRole = "super_admin" | "salon_owner" | "admin" | "staff";
+export type UserRole = Database["public"]["Enums"]["app_role"];
 
 /**
  * Auth metadata stored in JWT tokens
