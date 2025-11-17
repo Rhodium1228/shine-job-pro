@@ -74,6 +74,13 @@ export type Database = {
             foreignKeyName: "active_jobs_branch_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "active_jobs_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -129,6 +136,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_branch_id_fkey"
             columns: ["salon_id"]
@@ -334,6 +348,13 @@ export type Database = {
             foreignKeyName: "customer_reviews_branch_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -438,6 +459,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_surveys_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
             referencedColumns: ["id"]
           },
           {
@@ -605,6 +633,13 @@ export type Database = {
             foreignKeyName: "loyalty_config_branch_id_fkey"
             columns: ["salon_id"]
             isOneToOne: true
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_config_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -657,6 +692,13 @@ export type Database = {
           value?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "loyalty_promotions_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loyalty_promotions_branch_id_fkey"
             columns: ["salon_id"]
@@ -721,6 +763,13 @@ export type Database = {
             foreignKeyName: "loyalty_tiers_branch_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_tiers_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -771,6 +820,13 @@ export type Database = {
             foreignKeyName: "loyalty_transactions_branch_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -815,6 +871,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "platform_audit_log_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "platform_audit_log_salon_id_fkey"
             columns: ["salon_id"]
@@ -890,7 +953,21 @@ export type Database = {
             foreignKeyName: "profiles_default_branch_id_fkey"
             columns: ["default_salon_id"]
             isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_default_branch_id_fkey"
+            columns: ["default_salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
             referencedColumns: ["id"]
           },
           {
@@ -1018,6 +1095,13 @@ export type Database = {
             foreignKeyName: "staff_invitations_branch_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_invitations_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
             referencedRelation: "salons"
             referencedColumns: ["id"]
           },
@@ -1132,6 +1216,13 @@ export type Database = {
           staff_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "staff_branches_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "staff_branches_branch_id_fkey"
             columns: ["salon_id"]
@@ -1261,7 +1352,123 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      branches: {
+        Row: {
+          acsu_bonus_multiplier: number | null
+          acsu_points_per_dollar: number | null
+          address: string | null
+          color_theme: string | null
+          created_at: string | null
+          email: string | null
+          gps_latitude: number | null
+          gps_longitude: number | null
+          gps_radius_meters: number | null
+          id: string | null
+          is_active: boolean | null
+          logo_url: string | null
+          manager_id: string | null
+          name: string | null
+          opening_hours: Json | null
+          owner_user_id: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          acsu_bonus_multiplier?: number | null
+          acsu_points_per_dollar?: number | null
+          address?: string | null
+          color_theme?: string | null
+          created_at?: string | null
+          email?: string | null
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          gps_radius_meters?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          manager_id?: string | null
+          name?: string | null
+          opening_hours?: Json | null
+          owner_user_id?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          acsu_bonus_multiplier?: number | null
+          acsu_points_per_dollar?: number | null
+          address?: string | null
+          color_theme?: string | null
+          created_at?: string | null
+          email?: string | null
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          gps_radius_meters?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          manager_id?: string | null
+          name?: string | null
+          opening_hours?: Json | null
+          owner_user_id?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_branches: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_default: boolean | null
+          salon_id: string | null
+          staff_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_default?: boolean | null
+          salon_id?: string | null
+          staff_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_default?: boolean | null
+          salon_id?: string | null
+          staff_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_branches_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_branches_branch_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "salons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_branches_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_user_salon_id: { Args: never; Returns: string }
