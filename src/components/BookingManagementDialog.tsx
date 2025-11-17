@@ -20,7 +20,7 @@ const bookingSchema = z.object({
   client_phone: z.string().trim().max(50).optional(),
   client_email: z.string().trim().email({ message: "Invalid email" }).max(255).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional(),
-  branch_id: z.string().optional(),
+  salon_id: z.string().optional(),
 });
 
 interface Staff {
@@ -41,7 +41,7 @@ interface Booking {
   client_phone?: string | null;
   client_email?: string | null;
   notes?: string | null;
-  branch_id?: string | null;
+  salon_id?: string | null;
 }
 
 interface BookingManagementDialogProps {
@@ -72,7 +72,7 @@ export const BookingManagementDialog = ({
     client_phone: "",
     client_email: "",
     notes: "",
-    branch_id: "",
+    salon_id: "",
   });
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export const BookingManagementDialog = ({
         client_phone: booking.client_phone || "",
         client_email: booking.client_email || "",
         notes: booking.notes || "",
-        branch_id: booking.branch_id || "",
+        salon_id: booking.salon_id || "",
       });
     } else {
       setFormData({
@@ -135,7 +135,7 @@ export const BookingManagementDialog = ({
         client_phone: "",
         client_email: "",
         notes: "",
-        branch_id: "",
+        salon_id: "",
       });
     }
   }, [booking, open]);
@@ -161,7 +161,7 @@ export const BookingManagementDialog = ({
         client_phone: validated.client_phone || null,
         client_email: validated.client_email || null,
         notes: validated.notes || null,
-        salon_id: validated.branch_id || null,
+        salon_id: validated.salon_id || null,
       };
 
       if (booking) {
@@ -237,10 +237,10 @@ export const BookingManagementDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="branch_id">Branch (Optional)</Label>
+            <Label htmlFor="salon_id">Branch (Optional)</Label>
             <Select
-              value={formData.branch_id}
-              onValueChange={(value) => setFormData({ ...formData, branch_id: value })}
+              value={formData.salon_id}
+              onValueChange={(value) => setFormData({ ...formData, salon_id: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select branch (optional)" />

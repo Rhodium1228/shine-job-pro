@@ -20,7 +20,7 @@ export interface StaffProfile {
     total_reviews: number | null;
     availability_status: string | null;
     working_hours: any;
-    default_branch_id: string | null;
+    default_salon_id: string | null;
     role: string | null;
   };
   branches: Array<{
@@ -45,7 +45,7 @@ export interface Booking {
   booking_time: string;
   status: string;
   notes: string | null;
-  branch_id: string | null;
+  salon_id: string | null;
   created_at: string;
   updated_at: string;
 }

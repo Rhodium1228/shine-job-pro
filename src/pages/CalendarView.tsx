@@ -125,7 +125,7 @@ const CalendarView = () => {
 
       // Filter by branch if one is selected
       if (selectedBranch) {
-        query = query.eq("branch_id", selectedBranch.id);
+        query = query.eq("salon_id", selectedBranch.id);
       }
 
       const { data, error } = await query;

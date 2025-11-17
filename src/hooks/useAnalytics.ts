@@ -42,7 +42,7 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}) => {
         .select('*');
 
       if (options.branchId) {
-        query = query.eq('branch_id', options.branchId);
+        query = query.eq('salon_id', options.branchId);
       }
 
       if (options.staffId) {

@@ -60,7 +60,7 @@ interface Booking {
   client_phone?: string | null;
   client_email?: string | null;
   notes?: string | null;
-  branch_id?: string | null;
+  salon_id?: string | null;
   profiles: {
     full_name: string | null;
   } | null;
@@ -120,7 +120,7 @@ const EnhancedBookingManagement = () => {
         .select(`
           *,
           profiles:staff_id (full_name),
-          branches:branch_id (name)
+          branches:salon_id (name)
         `)
         .order("booking_time", { ascending: false });
 
@@ -174,7 +174,7 @@ const EnhancedBookingManagement = () => {
 
     // Branch filter
     if (filterBranch !== "all") {
-      filtered = filtered.filter(b => b.branch_id === filterBranch);
+      filtered = filtered.filter(b => b.salon_id === filterBranch);
     }
 
     // Staff filter

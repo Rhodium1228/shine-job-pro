@@ -124,7 +124,7 @@ const EarningsPage = () => {
         .from("active_jobs")
         .select("*")
         .eq("staff_id", user.id)
-        .eq("branch_id", selectedBranch.id)
+        .eq("salon_id", selectedBranch.id)
         .eq("status", "completed")
         .not("completed_at", "is", null)
         .order("completed_at", { ascending: false });

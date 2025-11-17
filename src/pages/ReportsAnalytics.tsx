@@ -62,7 +62,7 @@ export default function ReportsAnalytics() {
           *,
           staff:profiles!bookings_staff_id_fkey(id, full_name, avatar_url)
         `)
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .gte('booking_time', dateRange.from.toISOString())
         .lte('booking_time', dateRange.to.toISOString());
 
@@ -119,7 +119,7 @@ export default function ReportsAnalytics() {
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .eq('status', 'completed')
         .gte('booking_time', dateRange.from.toISOString())
         .lte('booking_time', dateRange.to.toISOString())
@@ -175,7 +175,7 @@ export default function ReportsAnalytics() {
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('booking_time, status')
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .gte('booking_time', dateRange.from.toISOString())
         .lte('booking_time', dateRange.to.toISOString());
 
@@ -237,7 +237,7 @@ export default function ReportsAnalytics() {
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('client_name, client_email, booking_time, status')
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .gte('booking_time', dateRange.from.toISOString())
         .lte('booking_time', dateRange.to.toISOString())
         .order('booking_time');

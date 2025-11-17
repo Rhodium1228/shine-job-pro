@@ -29,7 +29,7 @@ export default function ACSULoyaltyConfig() {
       const { data, error } = await supabase
         .from('loyalty_config')
         .select('*')
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -44,7 +44,7 @@ export default function ACSULoyaltyConfig() {
       const { data, error } = await supabase
         .from('loyalty_tiers')
         .select('*')
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .order('tier_order');
       if (error) throw error;
       return data;
@@ -62,7 +62,7 @@ export default function ACSULoyaltyConfig() {
           *,
           staff:profiles!loyalty_transactions_staff_id_fkey(full_name)
         `)
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -81,7 +81,7 @@ export default function ACSULoyaltyConfig() {
           *,
           creator:profiles!loyalty_promotions_created_by_fkey(full_name)
         `)
-        .eq('branch_id', selectedBranch?.id)
+        .eq('salon_id', selectedBranch?.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -101,7 +101,7 @@ export default function ACSULoyaltyConfig() {
       } else {
         const { error } = await supabase
           .from('loyalty_config')
-          .insert({ ...config, branch_id: selectedBranch?.id });
+          .insert({ ...config, salon_id: selectedBranch?.id });
         if (error) throw error;
       }
     },
@@ -330,7 +330,7 @@ function TierManagement({ tiers, branchId, isLoading }: any) {
       } else {
         const { error } = await supabase
           .from('loyalty_tiers')
-          .insert({ ...tier, branch_id: branchId });
+          .insert({ ...tier, salon_id: branchId });
         if (error) throw error;
       }
     },
@@ -705,7 +705,7 @@ function ManualAdjustmentDialog({ branchId, onClose }: any) {
         .from('loyalty_transactions')
         .insert({
           customer_id: formData.customer_id,
-          branch_id: branchId,
+          salon_id: branchId,
           transaction_type: formData.transaction_type,
           points_amount: formData.points_amount,
           balance_after: data.newBalance,
@@ -857,7 +857,7 @@ function PromotionManager({ promotions, branchId, isLoading }: any) {
       } else {
         const { error } = await supabase
           .from('loyalty_promotions')
-          .insert({ ...promotion, branch_id: branchId, created_by: user?.id });
+          .insert({ ...promotion, salon_id: branchId, created_by: user?.id });
         if (error) throw error;
       }
     },
