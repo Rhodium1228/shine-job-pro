@@ -81,7 +81,7 @@ export const ManualBookingDialog = ({ open, onOpenChange, onSuccess }: ManualBoo
         client_email: formData.client_email || null,
         service: formData.service,
         staff_id: formData.staff_id,
-        branch_id: formData.branch_id || null,
+        salon_id: formData.branch_id || null,
         booking_time: new Date(formData.booking_time).toISOString(),
         duration: formData.duration,
         price: parseFloat(formData.price) || 0,

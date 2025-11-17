@@ -11,7 +11,7 @@ export interface StaffMember {
   specialties: string[] | null;
   is_suspended: boolean | null;
   availability_status: string | null;
-  default_branch_id: string | null;
+  default_salon_id: string | null;
   rating: number | null;
   total_reviews: number | null;
 }
@@ -30,7 +30,7 @@ export const useStaffList = (options: UseStaffListOptions = {}) => {
     queryFn: async () => {
       let query = supabase
         .from('profiles')
-        .select('id, full_name, email, phone, avatar_url, hourly_rate, specialties, is_suspended, availability_status, default_branch_id, rating, total_reviews')
+        .select('id, full_name, email, phone, avatar_url, hourly_rate, specialties, is_suspended, availability_status, default_salon_id, rating, total_reviews')
         .order('full_name', { ascending: true });
 
       if (options.availabilityStatus) {
@@ -50,7 +50,7 @@ export const useStaffList = (options: UseStaffListOptions = {}) => {
         const { data: branchStaff } = await supabase
           .from('staff_branches')
           .select('staff_id')
-          .eq('branch_id', options.branchId);
+          .eq('salon_id', options.branchId);
 
         const staffIds = new Set(branchStaff?.map(sb => sb.staff_id) || []);
         filteredData = filteredData.filter(staff => staffIds.has(staff.id));

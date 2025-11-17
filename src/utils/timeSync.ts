@@ -100,7 +100,7 @@ export const startJob = async (
         price: price,
         duration: duration,
         status: 'active',
-        branch_id: branchId || null,
+        salon_id: branchId || null,
       }])
       .select()
       .single();

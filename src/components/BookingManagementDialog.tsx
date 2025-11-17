@@ -161,7 +161,7 @@ export const BookingManagementDialog = ({
         client_phone: validated.client_phone || null,
         client_email: validated.client_email || null,
         notes: validated.notes || null,
-        branch_id: validated.branch_id || null,
+        salon_id: validated.branch_id || null,
       };
 
       if (booking) {
