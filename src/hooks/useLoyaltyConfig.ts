@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface LoyaltyConfig {
   id: string;
-  branch_id: string | null;
+  salon_id: string;
   points_per_dollar: number;
   redeem_rate: number;
   minimum_redeem_points: number;
@@ -16,7 +16,7 @@ export interface LoyaltyConfig {
 
 export interface LoyaltyTier {
   id: string;
-  branch_id: string | null;
+  salon_id: string;
   name: string;
   min_points: number;
   max_points: number | null;
@@ -27,19 +27,19 @@ export interface LoyaltyTier {
   benefits: any;
 }
 
-export const useLoyaltyConfig = (branchId?: string) => {
+export const useLoyaltyConfig = (salonId?: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const configQuery = useQuery({
-    queryKey: ['loyalty-config', branchId],
+    queryKey: ['loyalty-config', salonId],
     queryFn: async () => {
-      if (!branchId) return null;
+      if (!salonId) return null;
 
       const { data, error } = await supabase
         .from('loyalty_config')
         .select('*')
-        .eq('branch_id', branchId)
+        .eq('salon_id', salonId)
         .maybeSingle();
 
       if (error) {
@@ -48,18 +48,18 @@ export const useLoyaltyConfig = (branchId?: string) => {
 
       return data as LoyaltyConfig | null;
     },
-    enabled: !!branchId,
+    enabled: !!salonId,
   });
 
   const tiersQuery = useQuery({
-    queryKey: ['loyalty-tiers', branchId],
+    queryKey: ['loyalty-tiers', salonId],
     queryFn: async () => {
-      if (!branchId) return [];
+      if (!salonId) return [];
 
       const { data, error } = await supabase
         .from('loyalty_tiers')
         .select('*')
-        .eq('branch_id', branchId)
+        .eq('salon_id', salonId)
         .order('tier_order');
 
       if (error) {
@@ -68,24 +68,24 @@ export const useLoyaltyConfig = (branchId?: string) => {
 
       return data as LoyaltyTier[];
     },
-    enabled: !!branchId,
+    enabled: !!salonId,
   });
 
   const updateConfig = useMutation({
     mutationFn: async (config: Partial<LoyaltyConfig>) => {
-      if (!branchId) throw new Error('Branch ID is required');
+      if (!salonId) throw new Error('Salon ID is required');
 
       const { error } = await supabase
         .from('loyalty_config')
         .upsert({
-          branch_id: branchId,
+          salon_id: salonId,
           ...config,
         });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['loyalty-config', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['loyalty-config', salonId] });
       toast({
         title: 'Success',
         description: 'Loyalty configuration updated',
@@ -102,7 +102,7 @@ export const useLoyaltyConfig = (branchId?: string) => {
 
   const updateTiers = useMutation({
     mutationFn: async (tiers: Partial<LoyaltyTier>[]) => {
-      if (!branchId) throw new Error('Branch ID is required');
+      if (!salonId) throw new Error('Salon ID is required');
 
       // Validate no overlapping ranges
       const sortedTiers = [...tiers].sort((a, b) => (a.min_points || 0) - (b.min_points || 0));
@@ -119,27 +119,27 @@ export const useLoyaltyConfig = (branchId?: string) => {
       await supabase
         .from('loyalty_tiers')
         .delete()
-        .eq('branch_id', branchId);
+        .eq('salon_id', salonId);
 
       // Insert new tiers
       const { error } = await supabase
         .from('loyalty_tiers')
         .insert(tiers.map(tier => ({
-          branch_id: branchId,
+          salon_id: salonId,
           name: tier.name!,
           min_points: tier.min_points!,
           max_points: tier.max_points || null,
           points_multiplier: tier.points_multiplier!,
-          discount_percentage: tier.discount_percentage || 0,
+          discount_percentage: tier.discount_percentage || null,
           tier_order: tier.tier_order!,
-          color: tier.color || '#6366f1',
+          color: tier.color || null,
           benefits: tier.benefits || [],
         })));
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['loyalty-tiers', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['loyalty-tiers', salonId] });
       toast({
         title: 'Success',
         description: 'Loyalty tiers updated',

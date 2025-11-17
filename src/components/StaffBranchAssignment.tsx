@@ -26,7 +26,7 @@ interface StaffMember {
   full_name: string;
   email: string;
   assigned_branches: string[];
-  default_branch_id: string | null;
+  default_salon_id: string | null;
 }
 
 interface StaffBranchAssignmentProps {
@@ -52,13 +52,13 @@ export const StaffBranchAssignment = ({ branches, onUpdate }: StaffBranchAssignm
     try {
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, full_name, email, default_branch_id");
+        .select("id, full_name, email, default_salon_id");
 
       if (profilesError) throw profilesError;
 
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from("staff_branches")
-        .select("staff_id, branch_id");
+        .select("staff_id, salon_id");
 
       if (assignmentsError) throw assignmentsError;
 
@@ -66,7 +66,7 @@ export const StaffBranchAssignment = ({ branches, onUpdate }: StaffBranchAssignm
         ...profile,
         assigned_branches: assignmentsData
           ?.filter((a) => a.staff_id === profile.id)
-          .map((a) => a.branch_id) || [],
+          .map((a) => a.salon_id) || [],
       }));
 
       setStaff(staffWithBranches);
@@ -85,7 +85,7 @@ export const StaffBranchAssignment = ({ branches, onUpdate }: StaffBranchAssignm
   const handleEditStaff = (staffMember: StaffMember) => {
     setSelectedStaff(staffMember);
     setSelectedBranches(staffMember.assigned_branches);
-    setDefaultBranch(staffMember.default_branch_id);
+    setDefaultBranch(staffMember.default_salon_id);
     setDialogOpen(true);
   };
 
@@ -106,7 +106,7 @@ export const StaffBranchAssignment = ({ branches, onUpdate }: StaffBranchAssignm
       if (selectedBranches.length > 0) {
         const assignments = selectedBranches.map((branchId) => ({
           staff_id: selectedStaff.id,
-          branch_id: branchId,
+          salon_id: branchId,
           is_default: branchId === defaultBranch,
         }));
 
@@ -120,7 +120,7 @@ export const StaffBranchAssignment = ({ branches, onUpdate }: StaffBranchAssignm
       // Update default branch in profile
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({ default_branch_id: defaultBranch })
+        .update({ default_salon_id: defaultBranch })
         .eq("id", selectedStaff.id);
 
       if (profileError) throw profileError;
@@ -184,7 +184,7 @@ export const StaffBranchAssignment = ({ branches, onUpdate }: StaffBranchAssignm
             .map((b) => b.name);
 
           const defaultBranchName = branches.find(
-            (b) => b.id === staffMember.default_branch_id
+            (b) => b.id === staffMember.default_salon_id
           )?.name;
 
           return (

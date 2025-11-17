@@ -20,7 +20,7 @@ interface Branch {
 }
 
 interface StaffBranch {
-  branch_id: string;
+  salon_id: string;
   is_default: boolean;
   branches: Branch;
 }
@@ -39,10 +39,10 @@ export const useUserBranches = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from("staff_branches")
         .select(`
-          branch_id,
+          salon_id,
           is_default,
           branches (*)
         `)
